@@ -1,8 +1,9 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Super Pinball Arcade</title>
 
 <style>
@@ -10,96 +11,81 @@
     box-sizing: border-box;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
     margin: 0;
     padding: 10px;
+    min-height: 100vh;
     background: #030814;
+    color: white;
     font-family: Arial, sans-serif;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    color: white;
+    align-items: center;
 }
 
 #game-container {
     width: 100%;
     max-width: 420px;
-    background: linear-gradient(180deg, #091227, #050a18);
+    padding: 10px;
     border: 4px solid #00d8ff;
     border-radius: 16px;
+    background: linear-gradient(#091227, #050a18);
     box-shadow: 0 0 20px #00aaff66;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .title {
-    font-size: 19px;
-    color: #ffea00;
-    text-shadow: 0 0 8px #ffaa00;
-    margin-bottom: 8px;
     text-align: center;
+    color: #ffea00;
+    font-size: 19px;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
 .scoreboard {
-    width: 100%;
     display: flex;
     justify-content: space-between;
+    padding: 8px 5px;
+    margin-bottom: 10px;
     background: #020712;
     border: 2px solid #00aaff;
     border-radius: 8px;
-    padding: 7px;
-    margin-bottom: 10px;
     font-size: 12px;
 }
 
-.score-item span {
+.scoreboard span {
     color: #00f0ff;
     font-size: 15px;
+    font-weight: bold;
 }
 
 canvas {
-    width: 100%;
-    max-width: 380px;
-    height: auto;
     display: block;
+    width: 100%;
+    height: auto;
     background: #030a1c;
     border: 3px solid #1a3968;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .controls {
-    width: 100%;
-    margin-top: 12px;
     display: grid;
-    grid-template-columns: 1fr 1.3fr 1fr;
+    grid-template-columns: 1fr 1.2fr 1fr;
     gap: 8px;
+    margin-top: 12px;
 }
 
 .btn {
+    padding: 13px 3px;
     border: 2px solid white;
-    border-radius: 18px;
-    padding: 12px 4px;
+    border-radius: 15px;
     font-size: 13px;
     font-weight: bold;
     color: black;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-shadow: 0 4px 0 #000;
     touch-action: none;
-}
-
-.btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 #000;
 }
 
 .btn-yellow {
@@ -111,27 +97,31 @@ canvas {
     font-size: 15px;
 }
 
-.btn-reset {
-    background: linear-gradient(#ff6699, #ff0055);
-    color: white;
+.btn-reset, .btn-update {
     grid-column: span 3;
     padding: 9px;
-    font-size: 12px;
+    color: white;
+}
+
+.btn-reset {
+    background: linear-gradient(#ff6699, #ff0055);
 }
 
 .btn-update {
     background: linear-gradient(#cc66ff, #9900ff);
-    color: white;
-    grid-column: span 3;
-    padding: 9px;
-    font-size: 12px;
+}
+
+.btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #000;
 }
 
 .instructions {
-    font-size: 10px;
-    color: #8ab4f8;
     margin-top: 10px;
+    color: #8ab4f8;
     text-align: center;
+    font-size: 11px;
+    line-height: 1.5;
 }
 </style>
 </head>
@@ -143,9 +133,9 @@ canvas {
     <div class="title">★ SUPER PINBALL ARCADE ★</div>
 
     <div class="scoreboard">
-        <div class="score-item">Pontos: <span id="score">0</span></div>
-        <div class="score-item">Recorde: <span id="highscore">0</span></div>
-        <div class="score-item">Bolas: <span id="balls">3</span></div>
+        <div>Pontos: <span id="score">0</span></div>
+        <div>Recorde: <span id="highscore">0</span></div>
+        <div>Bolas: <span id="balls">3</span></div>
     </div>
 
     <canvas id="canvas" width="380" height="540"></canvas>
@@ -159,7 +149,8 @@ canvas {
     </div>
 
     <div class="instructions">
-        Segure ESQ. e DIR. para rebater. Segure LANÇAR para comprimir a mola e solte para disparar!
+        Segure LANÇAR para comprimir a mola para baixo e solte para disparar.
+        Use ESQ. e DIR. para controlar as palhetas.
     </div>
 
 </div>
@@ -179,7 +170,17 @@ let gameOver = false;
 
 highscoreEl.textContent = highscore;
 
-// Corredor de lançamento
+const R = 8;
+
+// Limites do corredor de lançamento
+const chute = {
+    left: 333,
+    right: 363,
+    top: 42,
+    bottom: 515
+};
+
+// Mola: o cursor desce quando comprimido
 const launcher = {
     x: 350,
     baseY: 510,
@@ -187,41 +188,47 @@ const launcher = {
     maxCompress: 45
 };
 
-// Bola
 const ball = {
     x: 350,
     y: 470,
     vx: 0,
     vy: 0,
-    radius: 9,
+    radius: R,
     inChute: true,
     active: true
 };
 
-// Palhetas mais próximas
+// Palhetas aproximadas.
+// As pontas ficam separadas por cerca de 16 pixels
+// quando estão na posição de descanso.
 const flipperLeft = {
-    x: 130,
+    x: 139,
     y: 475,
-    length: 52,
-    angle: 0.12,
-    restAngle: 0.12,
-    targetAngle: 0.12,
-    upAngle: -0.65,
-    speed: 0.35
+    length: 42,
+    radius: 6,
+    angle: 0.10,
+    restAngle: 0.10,
+    upAngle: -0.55,
+    speed: 0.32
 };
 
 const flipperRight = {
-    x: 250,
+    x: 241,
     y: 475,
-    length: 52,
-    angle: Math.PI - 0.12,
-    restAngle: Math.PI - 0.12,
-    targetAngle: Math.PI - 0.12,
-    upAngle: Math.PI + 0.65,
-    speed: 0.35
+    length: 42,
+    radius: 6,
+    angle: Math.PI - 0.10,
+    restAngle: Math.PI - 0.10,
+    upAngle: Math.PI + 0.55,
+    speed: 0.32
 };
 
-// Alvos que aumentam a pontuação
+const keys = {
+    left: false,
+    right: false,
+    launch: false
+};
+
 const bumpers = [
     {x:130, y:130, radius:22, hitTime:0},
     {x:210, y:150, radius:22, hitTime:0},
@@ -230,33 +237,24 @@ const bumpers = [
     {x:230, y:270, radius:18, hitTime:0}
 ];
 
-// Pinos
 const pins = [];
 
-const pinRows = [
+[
     {count:5, y:90, minX:100, maxX:240},
     {count:6, y:180, minX:80, maxX:260},
     {count:7, y:300, minX:70, maxX:270},
     {count:8, y:360, minX:60, maxX:280}
-];
-
-pinRows.forEach(row => {
+].forEach(row => {
     const step = (row.maxX-row.minX)/(row.count-1);
 
     for(let i=0; i<row.count; i++) {
         pins.push({
-            x:row.minX+i*step,
-            y:row.y,
-            radius:4
+            x: row.minX+i*step,
+            y: row.y,
+            radius: 4
         });
     }
 });
-
-const keys = {
-    left:false,
-    right:false,
-    launch:false
-};
 
 // Teclado
 window.addEventListener("keydown", e => {
@@ -264,69 +262,77 @@ window.addEventListener("keydown", e => {
         e.preventDefault();
     }
 
-    if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a")
-        keys.left=true;
+    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        keys.left = true;
+    }
 
-    if(e.key==="ArrowRight" || e.key.toLowerCase()==="d")
-        keys.right=true;
+    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        keys.right = true;
+    }
 
-    if(e.key===" " || e.key==="ArrowDown")
-        keys.launch=true;
+    if(e.key === " " || e.key === "ArrowDown") {
+        keys.launch = true;
+    }
 });
 
 window.addEventListener("keyup", e => {
-    if(e.key==="ArrowLeft" || e.key.toLowerCase()==="a")
-        keys.left=false;
+    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        keys.left = false;
+    }
 
-    if(e.key==="ArrowRight" || e.key.toLowerCase()==="d")
-        keys.right=false;
+    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        keys.right = false;
+    }
 
-    if(e.key===" " || e.key==="ArrowDown") {
+    if(e.key === " " || e.key === "ArrowDown") {
         if(keys.launch) {
-            keys.launch=false;
+            keys.launch = false;
             releaseLauncher();
         }
     }
 });
 
-// Botões compatíveis com celular e computador
-function setupButton(id, onStart, onEnd) {
+function setupHoldButton(id, start, finish) {
     const btn = document.getElementById(id);
 
     btn.addEventListener("pointerdown", e => {
         e.preventDefault();
-        btn.setPointerCapture(e.pointerId);
-        onStart();
+
+        try {
+            btn.setPointerCapture(e.pointerId);
+        } catch (_) {}
+
+        start();
     });
 
-    function finish(e) {
+    btn.addEventListener("pointerup", e => {
         e.preventDefault();
-        onEnd();
-    }
+        finish();
+    });
 
-    btn.addEventListener("pointerup", finish);
     btn.addEventListener("pointercancel", finish);
-    btn.addEventListener("lostpointercapture", onEnd);
+
+    btn.addEventListener("lostpointercapture", finish);
 }
 
-setupButton(
+setupHoldButton(
     "btn-left",
-    () => keys.left=true,
-    () => keys.left=false
+    () => keys.left = true,
+    () => keys.left = false
 );
 
-setupButton(
+setupHoldButton(
     "btn-right",
-    () => keys.right=true,
-    () => keys.right=false
+    () => keys.right = true,
+    () => keys.right = false
 );
 
-setupButton(
+setupHoldButton(
     "btn-launch",
-    () => keys.launch=true,
+    () => keys.launch = true,
     () => {
         if(keys.launch) {
-            keys.launch=false;
+            keys.launch = false;
             releaseLauncher();
         }
     }
@@ -338,33 +344,24 @@ document.getElementById("btn-update").addEventListener("click", () => {
     location.reload();
 });
 
-// Lançamento com a mola
+// Disparo: a mola empurra a bola para cima.
+// Um pequeno desvio para a esquerda ajuda a entrar no tabuleiro.
 function releaseLauncher() {
     if(ball.inChute && launcher.compress > 0) {
-        const power = 12 + launcher.compress * 0.55;
-
-        ball.vy = -Math.min(power, 34);
-        ball.vx = -2.5;
+        const power = 14 + launcher.compress * 0.40;
 
         ball.inChute = false;
+        ball.vy = -Math.min(power, 32);
+        ball.vx = -2.2;
+
+        // A bola deixa o corredor por cima.
+        ball.x = 350;
+        ball.y = Math.min(ball.y, 470);
     }
 
     launcher.compress = 0;
 }
 
-// Reiniciar jogo
-function resetGame() {
-    score = 0;
-    balls = 3;
-    gameOver = false;
-
-    scoreEl.textContent = score;
-    ballsEl.textContent = balls;
-
-    resetBall();
-}
-
-// Preparar nova bola
 function resetBall() {
     ball.x = 350;
     ball.y = 470;
@@ -380,9 +377,19 @@ function resetBall() {
     flipperRight.angle = flipperRight.restAngle;
 }
 
-// Pontuação
-function addScore(points) {
-    score += points;
+function resetGame() {
+    score = 0;
+    balls = 3;
+    gameOver = false;
+
+    scoreEl.textContent = score;
+    ballsEl.textContent = balls;
+
+    resetBall();
+}
+
+function addScore(value) {
+    score += value;
     scoreEl.textContent = score;
 
     if(score > highscore) {
@@ -392,349 +399,365 @@ function addScore(points) {
     }
 }
 
-// Colisão com uma linha
-function checkLineCollision(x1,y1,x2,y2) {
-    if(ball.inChute) return;
+// Colisão precisa entre a bola e um segmento.
+// Funciona mesmo quando a bola se move rapidamente.
+function collideSegment(x1, y1, x2, y2, thickness, movingFlipper=false) {
+    if(ball.inChute) return false;
 
-    const dx=x2-x1;
-    const dy=y2-y1;
-    const len= Math.hypot(dx,dy);
+    const dx = x2-x1;
+    const dy = y2-y1;
+    const len2 = dx*dx+dy*dy;
 
-    const u=Math.max(0,Math.min(1,
-        ((ball.x-x1)*dx+(ball.y-y1)*dy)/(len*len)
+    if(len2 === 0) return false;
+
+    const u = Math.max(0, Math.min(1,
+        ((ball.x-x1)*dx+(ball.y-y1)*dy)/len2
     ));
 
-    const px=x1+u*dx;
-    const py=y1+u*dy;
+    const px = x1+u*dx;
+    const py = y1+u*dy;
 
-    const diffX=ball.x-px;
-    const diffY=ball.y-py;
-    const dist=Math.hypot(diffX,diffY);
+    let nx = ball.x-px;
+    let ny = ball.y-py;
 
-    if(dist < ball.radius+3) {
-        const nx=dist>0 ? diffX/dist : 0;
-        const ny=dist>0 ? diffY/dist : -1;
+    const dist = Math.hypot(nx,ny);
+    const minDist = ball.radius+thickness;
 
-        const dot=ball.vx*nx+ball.vy*ny;
+    if(dist >= minDist) return false;
 
-        if(dot<0) {
-            ball.vx-=1.7*dot*nx;
-            ball.vy-=1.7*dot*ny;
-        }
-
-        ball.x=px+nx*(ball.radius+3);
-        ball.y=py+ny*(ball.radius+3);
+    if(dist > 0.001) {
+        nx /= dist;
+        ny /= dist;
+    } else {
+        const length = Math.hypot(dx,dy) || 1;
+        nx = -dy/length;
+        ny = dx/length;
     }
+
+    // Corrigir a posição para impedir que a bola atravesse o objeto.
+    ball.x = px+nx*(minDist+0.5);
+    ball.y = py+ny*(minDist+0.5);
+
+    const dot = ball.vx*nx+ball.vy*ny;
+
+    if(dot < 0) {
+        ball.vx -= 1.8*dot*nx;
+        ball.vy -= 1.8*dot*ny;
+    }
+
+    if(movingFlipper) {
+        ball.vy -= 1.0;
+    }
+
+    return true;
 }
 
-// Colisão com as palhetas
-function checkFlipperCollision(f,isLeft) {
+function collideFlipper(f, isLeft) {
+    const x2 = f.x+Math.cos(f.angle)*f.length;
+    const y2 = f.y+Math.sin(f.angle)*f.length;
+
+    const hit = collideSegment(
+        f.x, f.y, x2, y2, f.radius, true
+    );
+
+    if(!hit) return;
+
+    const moving = isLeft ? keys.left : keys.right;
+
+    if(moving) {
+        // Rebatida forte ao acionar a palheta.
+        ball.vy = -Math.max(8, Math.abs(ball.vy)*0.45+8);
+        ball.vx += isLeft ? 2.2 : -2.2;
+    } else {
+        // Rebate moderado quando a bola toca a palheta parada.
+        if(ball.vy > -3) ball.vy = -4;
+    }
+
+    ball.vx = Math.max(-13, Math.min(13, ball.vx));
+    ball.vy = Math.max(-22, Math.min(22, ball.vy));
+}
+
+// Colisão circular com pinos e bumpers
+function collideCircle(obj, points, power) {
     if(ball.inChute) return;
 
-    const x2=f.x+Math.cos(f.angle)*f.length;
-    const y2=f.y+Math.sin(f.angle)*f.length;
+    let dx = ball.x-obj.x;
+    let dy = ball.y-obj.y;
+    let dist = Math.hypot(dx,dy);
+    const minDist = ball.radius+obj.radius;
 
-    const dx=x2-f.x;
-    const dy=y2-f.y;
-    const len2=dx*dx+dy*dy;
+    if(dist >= minDist) return;
 
-    const u=Math.max(0,Math.min(1,
-        ((ball.x-f.x)*dx+(ball.y-f.y)*dy)/len2
-    ));
-
-    const px=f.x+u*dx;
-    const py=f.y+u*dy;
-
-    const diffX=ball.x-px;
-    const diffY=ball.y-py;
-    const dist=Math.hypot(diffX,diffY);
-
-    if(dist < ball.radius+7) {
-        let nx,ny;
-
-        if(dist>0) {
-            nx=diffX/dist;
-            ny=diffY/dist;
-        } else {
-            nx=0;
-            ny=-1;
-        }
-
-        const moving = isLeft
-            ? keys.left
-            : keys.right;
-
-        const impulse = moving ? 15 : 7;
-
-        ball.vx=nx*impulse;
-        ball.vy=Math.min(ny*impulse-3,-5);
-
-        ball.x=px+nx*(ball.radius+8);
-        ball.y=py+ny*(ball.radius+8);
+    if(dist < 0.001) {
+        dx = 0;
+        dy = -1;
+        dist = 1;
     }
+
+    const nx = dx/dist;
+    const ny = dy/dist;
+
+    ball.x = obj.x+nx*(minDist+0.5);
+    ball.y = obj.y+ny*(minDist+0.5);
+
+    const dot = ball.vx*nx+ball.vy*ny;
+
+    if(dot < 0) {
+        ball.vx -= 1.8*dot*nx;
+        ball.vy -= 1.8*dot*ny;
+    }
+
+    // Impulso para afastar a bola do objeto.
+    ball.vx += nx*power;
+    ball.vy += ny*power;
+
+    if(points) addScore(points);
 }
 
-// Física do jogo
+// Física com subpassos para reduzir atravessamentos.
 function update() {
     if(gameOver) return;
 
-    // Mola desce quando o botão é segurado
+    // MOLA: a base móvel desce ao segurar o botão.
     if(keys.launch && ball.inChute) {
-        launcher.compress=Math.min(
-            launcher.compress+1.5,
-            launcher.maxCompress
+        launcher.compress = Math.min(
+            launcher.maxCompress,
+            launcher.compress+1.0
         );
 
-        ball.y=470+launcher.compress*0.35;
+        // A bola acompanha a parte móvel para baixo.
+        ball.y = 470+launcher.compress*0.35;
     }
 
-    // Movimento das palhetas
-    flipperLeft.targetAngle=keys.left
-        ? flipperLeft.upAngle
-        : flipperLeft.restAngle;
+    flipperLeft.angle += (
+        (keys.left ? flipperLeft.upAngle : flipperLeft.restAngle)
+        - flipperLeft.angle
+    )*flipperLeft.speed;
 
-    flipperRight.targetAngle=keys.right
-        ? flipperRight.upAngle
-        : flipperRight.restAngle;
+    flipperRight.angle += (
+        (keys.right ? flipperRight.upAngle : flipperRight.restAngle)
+        - flipperRight.angle
+    )*flipperRight.speed;
 
-    flipperLeft.angle +=
-        (flipperLeft.targetAngle-flipperLeft.angle)
-        * flipperLeft.speed;
-
-    flipperRight.angle +=
-        (flipperRight.targetAngle-flipperRight.angle)
-        * flipperRight.speed;
-
-    // Movimento da bola
     if(!ball.inChute) {
-        ball.vy+=0.20;
+        // Dividir o movimento em partes menores melhora as colisões.
+        const steps = 4;
 
-        ball.x+=ball.vx;
-        ball.y+=ball.vy;
+        for(let s=0; s<steps; s++) {
+            ball.vy += 0.20/steps;
 
-        ball.vx*=0.998;
-        ball.vy*=0.998;
+            ball.x += ball.vx/steps;
+            ball.y += ball.vy/steps;
 
-        // Limitar velocidades
-        ball.vx=Math.max(-18,Math.min(18,ball.vx));
-        ball.vy=Math.max(-24,Math.min(24,ball.vy));
-    }
+            // Parede esquerda
+            if(ball.x-ball.radius < 20) {
+                ball.x = 20+ball.radius;
+                ball.vx = Math.abs(ball.vx)*0.82;
+            }
 
-    // Parede esquerda
-    if(ball.x-ball.radius<20) {
-        ball.x=20+ball.radius;
-        ball.vx=Math.abs(ball.vx)*0.8;
-    }
+            // Teto do tabuleiro
+            if(ball.y-ball.radius < 20) {
+                ball.y = 20+ball.radius;
+                ball.vy = Math.abs(ball.vy)*0.82;
+            }
 
-    // Teto
-    if(ball.y-ball.radius<20) {
-        ball.y=20+ball.radius;
-        ball.vy=Math.abs(ball.vy)*0.8;
-    }
+            // Corredor: a bola que acabou de ser lançada sobe
+            // e é encaminhada para a área de jogo ao passar pelo topo.
+            if(ball.x+ball.radius > chute.left &&
+               ball.y > chute.top &&
+               ball.y < chute.bottom) {
 
-    // Corredor de lançamento à direita.
-    // A bola sobe pelo corredor e sai para a esquerda no topo.
-    if(!ball.inChute && ball.x>325 && ball.y>45 && ball.y<510) {
-        ball.x=325-ball.radius;
-        ball.vx=-Math.max(4,Math.abs(ball.vx));
-    }
+                ball.x = chute.left-ball.radius;
+                ball.vx = -Math.abs(ball.vx);
+            }
 
-    // Paredes laterais do corredor
-    if(!ball.inChute && ball.x>325 && ball.y>=510) {
-        ball.x=325-ball.radius;
-        ball.vx=-Math.abs(ball.vx);
-    }
+            // Guias inferiores
+            collideSegment(20,390,139,475,3);
+            collideSegment(320,390,241,475,3);
 
-    // Guias inferiores
-    checkLineCollision(20,390,130,475);
-    checkLineCollision(320,390,250,475);
+            // Pinos
+            for(const p of pins) {
+                collideCircle(p,10,0.8);
+            }
 
-    // Bumpers
-    bumpers.forEach(b => {
-        const dx=ball.x-b.x;
-        const dy=ball.y-b.y;
-        const dist=Math.hypot(dx,dy);
+            // Bumpers
+            for(const b of bumpers) {
+                const beforeX = ball.x;
+                const beforeY = ball.y;
 
-        if(!ball.inChute && dist<ball.radius+b.radius) {
-            const angle=Math.atan2(dy,dx);
-            const power=10;
+                collideCircle(b,0,0);
 
-            ball.vx=Math.cos(angle)*power;
-            ball.vy=Math.sin(angle)*power;
+                const dx = ball.x-b.x;
+                const dy = ball.y-b.y;
 
-            // Afastar a bola para evitar pontuação repetida
-            ball.x=b.x+Math.cos(angle)*(ball.radius+b.radius+1);
-            ball.y=b.y+Math.sin(angle)*(ball.radius+b.radius+1);
+                if(Math.hypot(dx,dy) < ball.radius+b.radius+1) {
+                    // O impulso é aplicado somente no contato.
+                    const angle = Math.atan2(dy,dx);
+                    ball.vx += Math.cos(angle)*2.0;
+                    ball.vy += Math.sin(angle)*2.0;
 
-            b.hitTime=12;
-            addScore(100);
+                    if(b.hitTime === 0) {
+                        addScore(100);
+                        b.hitTime = 12;
+                    }
+                }
+
+                if(b.hitTime > 0) b.hitTime--;
+            }
+
+            // Palhetas
+            collideFlipper(flipperLeft,true);
+            collideFlipper(flipperRight,false);
+
+            // Evitar velocidades excessivas.
+            ball.vx = Math.max(-15,Math.min(15,ball.vx));
+            ball.vy = Math.max(-24,Math.min(24,ball.vy));
         }
 
-        if(b.hitTime>0) b.hitTime--;
-    });
+        // Atrito leve
+        ball.vx *= 0.999;
+        ball.vy *= 0.999;
+    }
 
-    // Pinos
-    pins.forEach(p => {
-        const dx=ball.x-p.x;
-        const dy=ball.y-p.y;
-        const dist=Math.hypot(dx,dy);
-
-        if(!ball.inChute && dist<ball.radius+p.radius) {
-            const angle=Math.atan2(dy,dx);
-
-            ball.vx=Math.cos(angle)*5;
-            ball.vy=Math.sin(angle)*5;
-
-            ball.x=p.x+Math.cos(angle)*(ball.radius+p.radius+1);
-            ball.y=p.y+Math.sin(angle)*(ball.radius+p.radius+1);
-
-            addScore(10);
-        }
-    });
-
-    // Palhetas
-    checkFlipperCollision(flipperLeft,true);
-    checkFlipperCollision(flipperRight,false);
-
-    // Perdeu a bola
-    if(ball.y>535) {
+    // Perder bola
+    if(ball.y > 540) {
         balls--;
-        ballsEl.textContent=balls;
+        ballsEl.textContent = balls;
 
-        if(balls<=0) {
-            gameOver=true;
+        if(balls <= 0) {
+            gameOver = true;
         } else {
             resetBall();
         }
     }
 }
 
-// Desenhar palheta
 function drawFlipper(f) {
     ctx.save();
     ctx.translate(f.x,f.y);
     ctx.rotate(f.angle);
 
     ctx.beginPath();
-    ctx.roundRect(0,-6,f.length,12,6);
+    ctx.roundRect(0,-f.radius,f.length,f.radius*2,f.radius);
 
-    ctx.fillStyle="#ffaa00";
+    ctx.fillStyle = "#ffaa00";
     ctx.fill();
 
-    ctx.strokeStyle="#ffffff";
-    ctx.lineWidth=2;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.restore();
 }
 
-// Desenhar mola
 function drawCompressionSpring() {
-    const bottomY=launcher.baseY;
-    const topY=ball.inChute
+    const topY = ball.inChute
         ? ball.y+ball.radius+2
         : 500;
 
-    const height=Math.max(5,bottomY-topY);
-    const coils=8;
-    const step=height/coils;
+    const bottomY = launcher.baseY;
+
+    // A mola é desenhada entre a bola e a base fixa.
+    const height = Math.max(8,bottomY-topY);
+    const coils = 8;
+    const step = height/coils;
 
     ctx.beginPath();
     ctx.moveTo(launcher.x,bottomY);
 
     for(let i=1;i<=coils;i++) {
-        const y=bottomY-step*i;
-        const offset=(i%2===0)?-8:8;
+        const y = bottomY-step*i;
+        const offset = i%2===0 ? -7 : 7;
 
         ctx.lineTo(launcher.x+offset,y+step/2);
         ctx.lineTo(launcher.x,y);
     }
 
-    ctx.strokeStyle="#00ffff";
-    ctx.lineWidth=3;
-    ctx.shadowBlur=6;
-    ctx.shadowColor="#00ffff";
+    ctx.strokeStyle = "#00ffff";
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = "#00ffff";
     ctx.stroke();
-    ctx.shadowBlur=0;
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle="#ff0055";
+    // Base fixa da mola
+    ctx.fillStyle = "#ff0055";
     ctx.fillRect(launcher.x-12,bottomY,24,6);
+
+    // Haste móvel que desce ao comprimir.
+    ctx.fillStyle = "#00ccff";
+    ctx.fillRect(launcher.x-3,topY,6,8);
 }
 
-// Desenhar jogo
 function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Bordas
-    ctx.strokeStyle="#00aaff";
-    ctx.lineWidth=3;
+    // Contorno do tabuleiro
+    ctx.strokeStyle = "#00aaff";
+    ctx.lineWidth = 3;
     ctx.strokeRect(10,10,360,520);
 
-    // Corredor lateral direito
+    // Corredor lateral
     ctx.beginPath();
-    ctx.moveTo(325,40);
-    ctx.lineTo(325,525);
-    ctx.strokeStyle="#00d8ff";
-    ctx.lineWidth=3;
+    ctx.moveTo(chute.left,40);
+    ctx.lineTo(chute.left,525);
+    ctx.strokeStyle = "#00d8ff";
+    ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Guia superior
+    // Guia superior que direciona a bola para o jogo
     ctx.beginPath();
-    ctx.moveTo(325,40);
+    ctx.moveTo(chute.left,40);
     ctx.quadraticCurveTo(325,15,180,15);
     ctx.quadraticCurveTo(20,15,20,120);
-
-    ctx.strokeStyle="#00d8ff";
-    ctx.lineWidth=4;
+    ctx.strokeStyle = "#00d8ff";
+    ctx.lineWidth = 4;
     ctx.stroke();
 
     // Guias inferiores
     ctx.beginPath();
     ctx.moveTo(20,390);
-    ctx.lineTo(130,475);
+    ctx.lineTo(139,475);
 
     ctx.moveTo(320,390);
-    ctx.lineTo(250,475);
+    ctx.lineTo(241,475);
 
-    ctx.strokeStyle="#0077ff";
-    ctx.lineWidth=5;
+    ctx.strokeStyle = "#0077ff";
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     // Pinos
-    pins.forEach(p => {
+    for(const p of pins) {
         ctx.beginPath();
         ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
-
-        ctx.fillStyle="#ffffff";
-        ctx.shadowBlur=4;
-        ctx.shadowColor="#00f0ff";
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowBlur = 4;
+        ctx.shadowColor = "#00f0ff";
         ctx.fill();
-        ctx.shadowBlur=0;
-    });
+        ctx.shadowBlur = 0;
+    }
 
     // Bumpers
-    bumpers.forEach(b => {
+    for(const b of bumpers) {
         ctx.beginPath();
         ctx.arc(b.x,b.y,b.radius,0,Math.PI*2);
 
-        ctx.fillStyle=b.hitTime>0?"#ffff00":"#ff3300";
-        ctx.strokeStyle="#ffcc00";
-        ctx.lineWidth=4;
+        ctx.fillStyle = b.hitTime>0 ? "#ffff00" : "#ff3300";
+        ctx.strokeStyle = "#ffcc00";
+        ctx.lineWidth = 4;
+
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle="#ffffff";
-        ctx.font="16px sans-serif";
-        ctx.textAlign="center";
-        ctx.textBaseline="middle";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText("★",b.x,b.y);
-    });
+    }
 
-    // Palhetas
     drawFlipper(flipperLeft);
     drawFlipper(flipperRight);
-
-    // Mola
     drawCompressionSpring();
 
     // Bola
@@ -742,45 +765,47 @@ function draw() {
         ctx.beginPath();
         ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);
 
-        ctx.fillStyle="#e6e6e6";
-        ctx.shadowBlur=8;
-        ctx.shadowColor="#ffffff";
+        ctx.fillStyle = "#eeeeee";
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#ffffff";
         ctx.fill();
 
-        ctx.strokeStyle="#aaaaaa";
-        ctx.lineWidth=1;
+        ctx.strokeStyle = "#aaaaaa";
+        ctx.lineWidth = 1;
         ctx.stroke();
-        ctx.shadowBlur=0;
+        ctx.shadowBlur = 0;
     }
 
-    // Indicador de compressão
+    // Força da mola
     if(ball.inChute && keys.launch) {
-        ctx.fillStyle="#00ffff";
-        ctx.font="bold 12px Arial";
-        ctx.textAlign="center";
+        ctx.fillStyle = "#00ffff";
+        ctx.font = "bold 12px Arial";
+        ctx.textAlign = "center";
+
         ctx.fillText(
-            "FORÇA: "+Math.round(launcher.compress/launcher.maxCompress*100)+"%",
+            "FORÇA: "+Math.round(
+                launcher.compress/launcher.maxCompress*100
+            )+"%",
             270,430
         );
     }
 
     // Fim de jogo
     if(gameOver) {
-        ctx.fillStyle="rgba(0,0,0,0.82)";
+        ctx.fillStyle = "rgba(0,0,0,0.82)";
         ctx.fillRect(10,10,360,520);
 
-        ctx.fillStyle="#ff0055";
-        ctx.font="bold 24px Arial";
-        ctx.textAlign="center";
+        ctx.fillStyle = "#ff0055";
+        ctx.font = "bold 24px Arial";
+        ctx.textAlign = "center";
         ctx.fillText("FIM DE JOGO",190,230);
 
-        ctx.fillStyle="#ffffff";
-        ctx.font="13px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "13px Arial";
         ctx.fillText("Toque em REINICIAR",190,270);
     }
 }
 
-// Loop principal
 function gameLoop() {
     update();
     draw();
@@ -792,3 +817,4 @@ gameLoop();
 
 </body>
 </html>
+```
