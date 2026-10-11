@@ -1,10 +1,11 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Super Pinball Arcade V6</title>
+<title>Super Pinball Arcade V7</title>
 
 <style>
 * {
@@ -18,15 +19,15 @@ body {
     color: white;
     font-family: Arial, sans-serif;
     text-align: center;
+    min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
     padding: 4px;
-    touch-action: manipulation;
 }
 
 h1 {
     font-size: clamp(19px, 5vw, 27px);
-    margin: 4px 0 5px;
+    margin: 4px 0;
     color: #ffe66d;
 }
 
@@ -49,7 +50,7 @@ h1 {
     margin: 0 auto;
     width: min(98vw, 520px);
     height: auto;
-    max-height: 68dvh;
+    max-height: 65dvh;
     aspect-ratio: 400 / 700;
     border: 3px solid #5deaff;
     border-radius: 9px;
@@ -77,7 +78,7 @@ button {
     background: #ffe66d;
     box-shadow: 0 3px 0 #b89e36;
     cursor: pointer;
-    touch-action: none;
+    touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
 }
@@ -108,7 +109,6 @@ button.active {
     padding: 8px 14px;
     font-size: 13px;
     background: #d6c4ff;
-    touch-action: manipulation;
 }
 
 .tip {
@@ -130,7 +130,7 @@ button.active {
     }
 
     #game {
-        max-height: 60dvh;
+        max-height: 55dvh;
     }
 
     button {
@@ -213,8 +213,8 @@ let lastTime = 0;
 let audioContext = null;
 
 try {
-    record = Number(localStorage.getItem("pinballRecordV6")) || 0;
-} catch (e) {
+    record = Number(localStorage.getItem("pinballRecordV7")) || 0;
+} catch (error) {
     record = 0;
 }
 
@@ -228,10 +228,6 @@ const ball = {
     r: BALL_RADIUS
 };
 
-/*
-  As pontas ficam separadas quando levantadas.
-  A geometria é compartilhada com a colisão.
-*/
 const leftFlipper = {
     x: 112,
     y: 595,
@@ -239,7 +235,6 @@ const leftFlipper = {
     radius: 10,
     restAngle: 0.20,
     raisedAngle: -0.42,
-    angle: 0.20,
     lastHit: 0
 };
 
@@ -250,7 +245,6 @@ const rightFlipper = {
     radius: 10,
     restAngle: Math.PI - 0.20,
     raisedAngle: Math.PI + 0.42,
-    angle: Math.PI - 0.20,
     lastHit: 0
 };
 
@@ -287,8 +281,7 @@ function getFlipperSegment(flipper, pressed) {
         y1: flipper.y,
         x2: flipper.x + Math.cos(angle) * flipper.length,
         y2: flipper.y + Math.sin(angle) * flipper.length,
-        radius: flipper.radius,
-        angle
+        radius: flipper.radius
     };
 }
 
@@ -310,8 +303,8 @@ function addScore(points) {
         recordText.textContent = record;
 
         try {
-            localStorage.setItem("pinballRecordV6", String(record));
-        } catch (e) {}
+            localStorage.setItem("pinballRecordV7", String(record));
+        } catch (error) {}
     }
 }
 
@@ -345,7 +338,7 @@ function playSound(frequency = 440, duration = 0.07) {
         );
 
         oscillator.stop(audioContext.currentTime + duration);
-    } catch (e) {}
+    } catch (error) {}
 }
 
 function resetBall() {
@@ -372,11 +365,12 @@ function launchBall() {
     launchReady = false;
     ballInPlay = true;
 
+    // Bola começa dentro do corredor, acima da saída aberta.
     ball.x = 355;
     ball.y = 585;
 
-    // Lançamento mais forte.
-    ball.vx = -2.0 - Math.random() * 0.8;
+    // Lançamento forte para cima e em direção ao tabuleiro.
+    ball.vx = -2.5;
     ball.vy = -11.5;
 
     playSound(420, 0.14);
@@ -444,6 +438,8 @@ function collideWithLine(x1, y1, x2, y2, radius = 5) {
     const dy = y2 - y1;
     const len2 = dx * dx + dy * dy;
 
+    if (len2 === 0) return;
+
     let t = (
         (ball.x - x1) * dx +
         (ball.y - y1) * dy
@@ -486,7 +482,6 @@ function collideWithFlipper(flipper, pressed, isLeft, now) {
     if (!ballInPlay) return;
 
     const seg = getFlipperSegment(flipper, pressed);
-
     const dx = seg.x2 - seg.x1;
     const dy = seg.y2 - seg.y1;
     const len2 = dx * dx + dy * dy;
@@ -531,11 +526,7 @@ function collideWithFlipper(flipper, pressed, isLeft, now) {
     if (pressed && now - flipper.lastHit > 100) {
         ball.vy = Math.min(ball.vy, -10.5);
 
-        if (isLeft) {
-            ball.vx += 2.2;
-        } else {
-            ball.vx -= 2.2;
-        }
+        ball.vx += isLeft ? 2.2 : -2.2;
 
         flipper.lastHit = now;
         addScore(10);
@@ -549,9 +540,6 @@ function updatePhysics(dt) {
     if (!ballInPlay || gameOver) return;
 
     const now = performance.now();
-
-    // Pequenos passos de física ajudam a evitar que
-    // a bola atravesse as palhetas em alta velocidade.
     const steps = Math.max(1, Math.ceil(dt / 2));
     const step = dt / steps;
 
@@ -561,7 +549,7 @@ function updatePhysics(dt) {
         ball.x += ball.vx * step;
         ball.y += ball.vy * step;
 
-        // Paredes laterais.
+        // Paredes laterais do tabuleiro.
         if (ball.x - ball.r < 12) {
             ball.x = 12 + ball.r;
             ball.vx = Math.abs(ball.vx) * 0.85;
@@ -582,8 +570,11 @@ function updatePhysics(dt) {
         collideWithLine(22, 480, 88, 540, 5);
         collideWithLine(378, 480, 312, 540, 5);
 
-        // Corredor de lançamento: sem barreira inferior.
-        collideWithLine(337, 420, 337, 610, 5);
+        /*
+          IMPORTANTE:
+          Não existe colisão vertical no corredor de lançamento.
+          A barreira antiga foi removida da física.
+        */
 
         for (const pin of pins) {
             circleCollision(pin, 5);
@@ -592,15 +583,6 @@ function updatePhysics(dt) {
         for (const bumper of bumpers) {
             circleCollision(bumper, 25);
         }
-
-        // Colisão sincronizada com o desenho das palhetas.
-        leftFlipper.angle = leftPressed
-            ? leftFlipper.raisedAngle
-            : leftFlipper.restAngle;
-
-        rightFlipper.angle = rightPressed
-            ? rightFlipper.raisedAngle
-            : rightFlipper.restAngle;
 
         collideWithFlipper(leftFlipper, leftPressed, true, now);
         collideWithFlipper(rightFlipper, rightPressed, false, now);
@@ -619,7 +601,6 @@ function drawFlipper(flipper, pressed) {
 
     ctx.save();
     ctx.lineCap = "round";
-
     ctx.lineWidth = flipper.radius * 2;
     ctx.strokeStyle = pressed ? "#fff36d" : "#ff9e43";
 
@@ -661,7 +642,7 @@ function drawBoard() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // Contorno esquerdo e superior.
+    // Contorno superior e parede direita.
     ctx.strokeStyle = "#3ee8ff";
     ctx.lineWidth = 3;
 
@@ -671,20 +652,18 @@ function drawBoard() {
     ctx.lineTo(388, 620);
     ctx.stroke();
 
+    // Parede esquerda e trilho inferior esquerdo.
     ctx.beginPath();
     ctx.moveTo(12, 12);
     ctx.lineTo(12, 480);
     ctx.lineTo(88, 540);
     ctx.stroke();
 
-    // Corredor de lançamento aberto na parte inferior.
-    ctx.strokeStyle = "#ffb84d";
-    ctx.lineWidth = 3;
-
-    ctx.beginPath();
-    ctx.moveTo(337, 420);
-    ctx.lineTo(337, 610);
-    ctx.stroke();
+    /*
+      O corredor fica livre:
+      não desenhamos a antiga barra vertical laranja
+      nem a barreira horizontal inferior.
+    */
 
     // Trilhos diagonais.
     ctx.strokeStyle = "#6578c9";
@@ -823,12 +802,13 @@ function setupFlipperButton(button, side) {
 }
 
 function gameLoop(timestamp) {
-    if (!lastTime) lastTime = timestamp;
+    if (!lastTime) {
+        lastTime = timestamp;
+    }
 
     let dt = timestamp - lastTime;
     lastTime = timestamp;
 
-    // Evita grandes saltos após pausas do navegador.
     dt = Math.min(dt, 12);
 
     updatePhysics(dt / 16.67);
@@ -864,3 +844,4 @@ requestAnimationFrame(gameLoop);
 
 </body>
 </html>
+```
