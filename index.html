@@ -155,7 +155,7 @@ function playSound(type) {
     const now = audioCtx.currentTime;
 
     if (type === 'launch') {
-        // Som de lançamento (subida rápida de frequência com ruído/onda senoidal)
+        // Som de lançamento (subida rápida de frequência)
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(150, now);
         osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
@@ -220,10 +220,10 @@ const chute = {
     bottom: 525
 };
 
-// Triângulos defletores laterais na base (evitam que a bola caia direto pelas laterais)
+// Triângulos defletores nas laterais inferiores
 const sideTriangles = [
-    { x1: 12, y1: 520, x2: 75, y2: 575, x3: 12, y3: 575 },   // Esquerdo
-    { x1: 315, y1: 520, x2: 252, y2: 575, x3: 315, y3: 575 }  // Direito
+    { x1: 12, y1: 510, x2: 70, y2: 565, x3: 12, y3: 565 },   // Esquerdo
+    { x1: 315, y1: 510, x2: 257, y2: 565, x3: 315, y3: 565 }  // Direito
 ];
 
 const ball = {
@@ -266,20 +266,20 @@ const pegs = [
     [85, 420], [180, 405], [285, 440]
 ];
 
-// Palhetas (flippers) centralizadas e simétricas na parte inferior
+// Palhetas afastadas deixando um espaço central para a bola passar
 const flippers = {
     left: {
-        pivotX: 105,
-        pivotY: 550,
-        length: 62,
+        pivotX: 85,
+        pivotY: 545,
+        length: 58,
         angle: -0.35,
         rest: -0.35,
         pressed: -0.95
     },
     right: {
-        pivotX: 222,
-        pivotY: 550,
-        length: 62,
+        pivotX: 242,
+        pivotY: 545,
+        length: 58,
         angle: Math.PI + 0.35,
         rest: Math.PI + 0.35,
         pressed: Math.PI + 0.95
@@ -323,12 +323,9 @@ function releaseLauncher() {
 
     playSound('launch');
 
-    // Mantém a bola centralizada dentro do corredor.
     ball.x = (chute.left + chute.right) / 2;
     ball.y = chute.bottom - 25;
     ball.vx = 0;
-
-    // A bola sobe em etapas fixas, sem poder sair antes do topo.
     ball.vy = -(12 + launcherPower * 0.12);
 
     launcherPower = 0;
@@ -414,24 +411,21 @@ function collideWithFlipper(f) {
     }
 }
 
-// Colisão simples com os triângulos laterais da base
 function collideWithSideTriangles() {
-    // Esquerdo: x entre 12 e 75, y entre 520 e 575
-    // Aproximação por linha inclinada do triângulo esquerdo (x1,y1) até (x2,y2)
-    // Linha diagonal do triângulo esquerdo: de (12, 520) a (75, 575)
-    const pLeft = closestPointOnSegment(ball.x, ball.y, 12, 520, 75, 575);
+    // Esquerdo
+    const pLeft = closestPointOnSegment(ball.x, ball.y, 12, 510, 70, 565);
     const distLeft = Math.hypot(ball.x - pLeft.x, ball.y - pLeft.y);
-    if (distLeft < ball.radius + 2 && ball.y > 515 && ball.x < 80) {
+    if (distLeft < ball.radius + 2 && ball.y > 505 && ball.x < 75) {
         ball.vx = Math.abs(ball.vx) + 3;
         ball.vy -= 3;
         ball.x = pLeft.x + (ball.radius + 2);
         playSound('peg');
     }
 
-    // Direito: linha diagonal de (315, 520) a (252, 575)
-    const pRight = closestPointOnSegment(ball.x, ball.y, 315, 520, 252, 575);
+    // Direito
+    const pRight = closestPointOnSegment(ball.x, ball.y, 315, 510, 257, 565);
     const distRight = Math.hypot(ball.x - pRight.x, ball.y - pRight.y);
-    if (distRight < ball.radius + 2 && ball.y > 515 && ball.x > 245) {
+    if (distRight < ball.radius + 2 && ball.y > 505 && ball.x > 252) {
         ball.vx = -(Math.abs(ball.vx) + 3);
         ball.vy -= 3;
         ball.x = pRight.x - (ball.radius + 2);
@@ -499,7 +493,6 @@ function update() {
         launcherPower = Math.min(launcherPower + 1, 100);
     }
 
-    // Durante o lançamento, a bola segue uma rota obrigatória.
     if (ball.launching) {
         ball.x = (chute.left + chute.right) / 2;
         ball.y += ball.vy;
@@ -545,7 +538,6 @@ function update() {
     ball.x += ball.vx;
     ball.y += ball.vy;
 
-    // Paredes laterais da área principal.
     if (ball.x - ball.radius < 12) {
         ball.x = 12 + ball.radius;
         ball.vx = Math.abs(ball.vx) * 0.85;
@@ -581,7 +573,6 @@ function drawBackground() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // Linhas decorativas.
     ctx.strokeStyle = "#29366b";
     ctx.lineWidth = 1;
 
@@ -592,7 +583,6 @@ function drawBackground() {
         ctx.stroke();
     }
 
-    // Laterais da área principal.
     ctx.strokeStyle = "#6b79ff";
     ctx.lineWidth = 5;
     ctx.beginPath();
@@ -602,7 +592,6 @@ function drawBackground() {
     ctx.lineTo(315, 70);
     ctx.stroke();
 
-    // Desenho dos triângulos laterais na base
     ctx.fillStyle = "#25306b";
     ctx.strokeStyle = "#5967ff";
     ctx.lineWidth = 2;
@@ -617,7 +606,6 @@ function drawBackground() {
         ctx.stroke();
     }
 
-    // Corredor vertical direito.
     ctx.strokeStyle = "#ffba49";
     ctx.lineWidth = 5;
 
@@ -842,7 +830,6 @@ bindHold("rightBtn",
     () => { rightHeld = false; }
 );
 
-// Lançador: segurar comprime a mola; soltar dispara.
 const launchBtn = document.getElementById("launchBtn");
 
 launchBtn.addEventListener("pointerdown", event => {
