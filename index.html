@@ -1,10 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
-<title>Super Pinball Arcade V8</title>
+<title>Super Pinball Arcade</title>
 
 <style>
 * {
@@ -14,143 +14,108 @@
 }
 
 body {
-    background: #101426;
+    background: #07112e;
     color: white;
     font-family: Arial, sans-serif;
     text-align: center;
-    min-height: 100dvh;
+    padding: 8px;
     overflow-x: hidden;
-    padding: 4px;
 }
 
 h1 {
-    font-size: clamp(19px, 5vw, 27px);
-    margin: 4px 0;
-    color: #ffe66d;
+    color: #ffe45e;
+    font-size: clamp(22px, 6vw, 34px);
+    margin: 6px 0 10px;
+    text-shadow: 2px 3px #a84b00;
 }
 
 .info {
     display: flex;
-    justify-content: center;
-    gap: 13px;
-    flex-wrap: wrap;
-    font-size: 13px;
+    justify-content: space-around;
+    gap: 4px;
+    background: #101e4d;
+    border: 2px solid #08dfff;
+    border-radius: 10px;
+    padding: 10px 2px;
+    margin-bottom: 8px;
+    font-size: clamp(13px, 3.5vw, 19px);
     font-weight: bold;
-    margin-bottom: 5px;
 }
 
 .info span {
-    color: #71f6ff;
+    color: #00eaff;
 }
 
-#game {
+canvas {
     display: block;
-    margin: 0 auto;
-    width: min(98vw, 520px);
+    width: min(98vw, 440px);
     height: auto;
-    max-height: 65dvh;
-    aspect-ratio: 400 / 700;
-    border: 3px solid #5deaff;
-    border-radius: 9px;
-    background: #080d20;
-    box-shadow: 0 0 12px #00d9ff70;
+    max-height: 66dvh;
+    margin: 0 auto;
+    background: #061747;
+    border: 4px solid #08cfff;
+    border-radius: 14px;
     touch-action: none;
 }
 
 .controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: min(98vw, 440px);
+    margin: 10px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
     gap: 7px;
-    margin: 7px auto 4px;
-    max-width: 520px;
 }
 
 button {
-    border: none;
-    border-radius: 9px;
-    padding: 8px 11px;
-    font-size: 14px;
+    border: 2px solid #ffffff;
+    border-radius: 12px;
+    padding: 13px 3px;
+    font-size: clamp(13px, 3.7vw, 17px);
     font-weight: bold;
-    color: #101426;
-    background: #ffe66d;
-    box-shadow: 0 3px 0 #b89e36;
+    color: #07112e;
+    background: #ffda35;
+    box-shadow: 0 4px 0 #a46c00;
     cursor: pointer;
     touch-action: manipulation;
-    user-select: none;
-    -webkit-user-select: none;
 }
 
-button:active,
-button.active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 #b89e36;
-    background: #71f6ff;
+button:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #a46c00;
 }
 
-.flipper-button {
-    flex: 1;
-    max-width: 110px;
+#launchBtn {
+    background: #00eaff;
+    box-shadow: 0 4px 0 #007a9b;
 }
 
-#launch {
-    background: #71f6ff;
+#restartBtn {
+    background: #ff496b;
+    box-shadow: 0 4px 0 #8e173b;
 }
 
-#restart {
-    background: #ff8b8b;
-}
-
-#update {
+#updateBtn {
     display: block;
-    margin: 6px auto;
-    padding: 8px 14px;
-    font-size: 13px;
-    background: #d6c4ff;
+    margin: 10px auto;
+    background: #c58bff;
+    box-shadow: 0 4px 0 #61349c;
+    padding: 10px 20px;
 }
 
-.tip {
-    font-size: 11px;
-    color: #c9d4ee;
-    margin: 4px auto;
-    max-width: 500px;
-}
-
-@media (max-height: 650px) {
-    h1 {
-        font-size: 18px;
-        margin: 2px;
-    }
-
-    .info {
-        margin-bottom: 3px;
-        font-size: 12px;
-    }
-
-    #game {
-        max-height: 55dvh;
-    }
-
-    button {
-        padding: 7px 9px;
-        font-size: 13px;
-    }
-
-    .controls {
-        margin: 5px auto 3px;
-    }
-
-    #update {
-        margin: 4px auto;
-        padding: 6px 12px;
-    }
+p {
+    font-size: 12px;
+    color: #a9eaff;
+    margin: 10px auto;
+    max-width: 440px;
+    line-height: 1.5;
 }
 </style>
+
 </head>
 
 <body>
 
-<h1>🎯 Super Pinball Arcade</h1>
+<h1>⭐ SUPER PINBALL ⭐</h1>
 
 <div class="info">
     <div>Pontos: <span id="score">0</span></div>
@@ -161,706 +126,635 @@ button.active {
 <canvas id="game" width="400" height="700"></canvas>
 
 <div class="controls">
-    <button id="leftBtn" class="flipper-button">◀ ESQ.</button>
-    <button id="launch">LANÇAR</button>
-    <button id="rightBtn" class="flipper-button">DIR. ▶</button>
+    <button id="leftBtn">◀ ESQ.</button>
+    <button id="launchBtn">LANÇAR</button>
+    <button id="rightBtn">DIR. ▶</button>
 </div>
 
-<div class="controls">
-    <button id="restart">🔄 Reiniciar</button>
-</div>
+<button id="restartBtn">🔄 REINICIAR</button> <button id="updateBtn">⟳ ATUALIZAR JOGO</button>
 
-<div class="tip">
-    Segure ESQ. e DIR. para rebater a bola. Toque em LANÇAR para começar.
-</div>
-
-<button id="update">🔄 ATUALIZAR JOGO</button>
+<p>
+    Segure ESQ. e DIR. para rebater a bola.
+    Toque em LANÇAR para lançar a bola pelo corredor.
+</p>
 
 <script>
-"use strict";
-
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const scoreText = document.getElementById("score");
-const recordText = document.getElementById("record");
-const ballsText = document.getElementById("balls");
-
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
-const launchBtn = document.getElementById("launch");
-const restartBtn = document.getElementById("restart");
-const updateBtn = document.getElementById("update");
+const scoreEl = document.getElementById("score");
+const recordEl = document.getElementById("record");
+const ballsEl = document.getElementById("balls");
 
 const W = canvas.width;
 const H = canvas.height;
 
-const BALL_RADIUS = 7;
-const MAX_SPEED = 12;
-const GRAVITY = 0.13;
+// Corredor de lançamento no lado direito.
+const LANE_LEFT = 344;
+const LANE_RIGHT = 384;
 
-// Corredor de lançamento.
-// A barra fica à esquerda do corredor e tem
-// uma abertura superior para a bola entrar no tabuleiro.
-const CORRIDOR_X = 320;
-const CORRIDOR_WALL_TOP = 480;
-const CORRIDOR_WALL_BOTTOM = 610;
+// A parede esquerda do corredor termina antes do topo.
+// Assim, a bola pode sair do corredor e entrar no jogo.
+const LANE_WALL_TOP = 112;
+const LANE_WALL_BOTTOM = 642;
+
+const GRAVITY = 0.105;
+const MAX_SPEED = 9.5;
 
 let score = 0;
 let balls = 3;
-let record = 0;
 let gameOver = false;
-let ballInPlay = false;
-let launchReady = true;
+let launched = false;
+let launching = false;
+let launchStage = "ready";
 let leftPressed = false;
 let rightPressed = false;
 let lastTime = 0;
-let audioContext = null;
+let animationId = null;
+
+let record = 0;
 
 try {
-    record = Number(localStorage.getItem("pinballRecordV8")) || 0;
-} catch (error) {
+    record = Number(localStorage.getItem("pinballRecord") || 0);
+} catch (e) {
     record = 0;
 }
 
-recordText.textContent = record;
+recordEl.textContent = record;
 
 const ball = {
-    x: 355,
-    y: 585,
+    x: 364,
+    y: 610,
+    r: 8,
     vx: 0,
     vy: 0,
-    r: BALL_RADIUS
-};
-
-const leftFlipper = {
-    x: 112,
-    y: 595,
-    length: 76,
-    radius: 10,
-    restAngle: 0.20,
-    raisedAngle: -0.42,
-    lastHit: 0
-};
-
-const rightFlipper = {
-    x: 288,
-    y: 595,
-    length: 76,
-    radius: 10,
-    restAngle: Math.PI - 0.20,
-    raisedAngle: Math.PI + 0.42,
-    lastHit: 0
+    active: true
 };
 
 const bumpers = [
-    { x: 110, y: 150, r: 22 },
-    { x: 275, y: 190, r: 22 },
-    { x: 190, y: 275, r: 24 },
-    { x: 95, y: 355, r: 18 },
-    { x: 300, y: 365, r: 19 }
+    {x: 100, y: 145, r: 24},
+    {x: 235, y: 185, r: 25},
+    {x: 170, y: 270, r: 24},
+    {x: 75, y: 340, r: 20},
+    {x: 265, y: 340, r: 20}
 ];
 
-const pins = [
-    { x: 185, y: 100, r: 6 },
-    { x: 225, y: 120, r: 6 },
-    { x: 65, y: 215, r: 6 },
-    { x: 155, y: 210, r: 6 },
-    { x: 235, y: 245, r: 6 },
-    { x: 305, y: 265, r: 6 },
-    { x: 155, y: 330, r: 6 },
-    { x: 225, y: 345, r: 6 },
-    { x: 255, y: 420, r: 6 },
-    { x: 125, y: 430, r: 6 },
-    { x: 190, y: 455, r: 6 }
+const pegs = [
+    {x: 155, y: 85, r: 5},
+    {x: 250, y: 95, r: 5},
+    {x: 70, y: 205, r: 5},
+    {x: 145, y: 205, r: 5},
+    {x: 305, y: 220, r: 5},
+    {x: 50, y: 270, r: 5},
+    {x: 115, y: 295, r: 5},
+    {x: 220, y: 290, r: 5},
+    {x: 305, y: 285, r: 5},
+    {x: 120, y: 385, r: 5},
+    {x: 200, y: 400, r: 5},
+    {x: 300, y: 405, r: 5},
+    {x: 80, y: 445, r: 5},
+    {x: 155, y: 470, r: 5},
+    {x: 240, y: 460, r: 5},
+    {x: 300, y: 500, r: 5}
 ];
 
-function getFlipperSegment(flipper, pressed) {
-    const angle = pressed
-        ? flipper.raisedAngle
-        : flipper.restAngle;
+const flippers = {
+    left: {x: 105, y: 590, length: 75, angle: 0.25},
+    right: {x: 285, y: 590, length: 75, angle: Math.PI - 0.25}
+};
 
-    return {
-        x1: flipper.x,
-        y1: flipper.y,
-        x2: flipper.x + Math.cos(angle) * flipper.length,
-        y2: flipper.y + Math.sin(angle) * flipper.length,
-        radius: flipper.radius
-    };
-}
-
-function limitSpeed() {
-    const speed = Math.hypot(ball.vx, ball.vy);
-
-    if (speed > MAX_SPEED) {
-        ball.vx = ball.vx / speed * MAX_SPEED;
-        ball.vy = ball.vy / speed * MAX_SPEED;
-    }
+function updateInfo() {
+    scoreEl.textContent = score;
+    recordEl.textContent = record;
+    ballsEl.textContent = balls;
 }
 
 function addScore(points) {
     score += points;
-    scoreText.textContent = score;
 
     if (score > record) {
         record = score;
-        recordText.textContent = record;
-
         try {
-            localStorage.setItem("pinballRecordV8", String(record));
-        } catch (error) {}
+            localStorage.setItem("pinballRecord", String(record));
+        } catch (e) {}
     }
-}
 
-function playSound(frequency = 440, duration = 0.07) {
-    try {
-        if (!audioContext) {
-            audioContext = new (
-                window.AudioContext || window.webkitAudioContext
-            )();
-        }
-
-        if (audioContext.state === "suspended") {
-            audioContext.resume();
-        }
-
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-
-        oscillator.type = "sine";
-        oscillator.frequency.value = frequency;
-        gain.gain.value = 0.06;
-
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-
-        oscillator.start();
-
-        gain.gain.exponentialRampToValueAtTime(
-            0.001,
-            audioContext.currentTime + duration
-        );
-
-        oscillator.stop(audioContext.currentTime + duration);
-    } catch (error) {}
+    updateInfo();
 }
 
 function resetBall() {
-    ball.x = 355;
-    ball.y = 585;
+    ball.x = 364;
+    ball.y = 610;
     ball.vx = 0;
     ball.vy = 0;
+    ball.active = true;
 
-    ballInPlay = false;
-    launchReady = true;
-
-    leftPressed = false;
-    rightPressed = false;
-
-    leftBtn.classList.remove("active");
-    rightBtn.classList.remove("active");
-}
-
-function launchBall() {
-    if (gameOver || balls <= 0 || ballInPlay || !launchReady) {
-        return;
-    }
-
-    launchReady = false;
-    ballInPlay = true;
-
-    // Bola começa no corredor.
-    ball.x = 355;
-    ball.y = 585;
-
-    // Sobe rapidamente e segue para a abertura superior.
-    ball.vx = -2.5;
-    ball.vy = -11.5;
-
-    playSound(420, 0.14);
-}
-
-function loseBall() {
-    if (!ballInPlay) return;
-
-    ballInPlay = false;
-    balls = Math.max(0, balls - 1);
-    ballsText.textContent = balls;
-
-    playSound(180, 0.18);
-
-    if (balls <= 0) {
-        gameOver = true;
-        return;
-    }
-
-    resetBall();
+    launched = false;
+    launching = false;
+    launchStage = "ready";
 }
 
 function restartGame() {
     score = 0;
     balls = 3;
     gameOver = false;
-
-    scoreText.textContent = score;
-    ballsText.textContent = balls;
+    leftPressed = false;
+    rightPressed = false;
 
     resetBall();
+    updateInfo();
 }
 
-function circleCollision(object, points = 10) {
-    const dx = ball.x - object.x;
-    const dy = ball.y - object.y;
-    const distance = Math.hypot(dx, dy);
-    const minDistance = ball.r + object.r;
+function launchBall() {
+    if (gameOver || launched || launching) return;
 
-    if (distance >= minDistance) return;
+    launched = true;
+    launching = true;
+    launchStage = "lane";
 
-    const nx = distance > 0.001 ? dx / distance : 0;
-    const ny = distance > 0.001 ? dy / distance : -1;
+    ball.x = 364;
+    ball.y = 610;
 
-    ball.x = object.x + nx * (minDistance + 0.5);
-    ball.y = object.y + ny * (minDistance + 0.5);
+    // Lançamento vertical pelo corredor.
+    ball.vx = 0;
+    ball.vy = -7.2;
+}
 
-    const vn = ball.vx * nx + ball.vy * ny;
+function clampBallSpeed() {
+    ball.vx = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, ball.vx));
+    ball.vy = Math.max(-MAX_SPEED, Math.min(MAX_SPEED, ball.vy));
+}
 
-    if (vn < 0) {
-        ball.vx -= 1.8 * vn * nx;
-        ball.vy -= 1.8 * vn * ny;
+function collideWithCircle(obj, radius, bounce, points) {
+    const dx = ball.x - obj.x;
+    const dy = ball.y - obj.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const minDist = ball.r + radius;
+
+    if (dist < minDist && dist > 0) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        ball.x = obj.x + nx * (minDist + 0.5);
+        ball.y = obj.y + ny * (minDist + 0.5);
+
+        const dot = ball.vx * nx + ball.vy * ny;
+
+        if (dot < 0) {
+            ball.vx -= (1 + bounce) * dot * nx;
+            ball.vy -= (1 + bounce) * dot * ny;
+        }
+
+        if (points) addScore(points);
     }
-
-    ball.vx += nx * 0.7;
-    ball.vy += ny * 0.7;
-
-    limitSpeed();
-    addScore(points);
-    playSound(650, 0.05);
 }
 
-function collideWithLine(x1, y1, x2, y2, radius = 5) {
+function collideWithSegment(x1, y1, x2, y2, thickness, bounce) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const len2 = dx * dx + dy * dy;
 
     if (len2 === 0) return;
 
-    let t = (
-        (ball.x - x1) * dx +
-        (ball.y - y1) * dy
-    ) / len2;
-
+    let t = ((ball.x - x1) * dx + (ball.y - y1) * dy) / len2;
     t = Math.max(0, Math.min(1, t));
 
     const px = x1 + t * dx;
     const py = y1 + t * dy;
 
-    let vx = ball.x - px;
-    let vy = ball.y - py;
+    const nx0 = ball.x - px;
+    const ny0 = ball.y - py;
+    const dist = Math.sqrt(nx0 * nx0 + ny0 * ny0);
+    const minDist = ball.r + thickness;
 
-    const dist = Math.hypot(vx, vy);
-    const minDist = ball.r + radius;
+    if (dist < minDist && dist > 0) {
+        const nx = nx0 / dist;
+        const ny = ny0 / dist;
 
-    if (dist >= minDist) return;
+        ball.x = px + nx * (minDist + 0.5);
+        ball.y = py + ny * (minDist + 0.5);
 
-    if (dist < 0.001) {
-        vx = -dy;
-        vy = dx;
-    }
+        const dot = ball.vx * nx + ball.vy * ny;
 
-    const normalLength = Math.hypot(vx, vy) || 1;
-    const nx = vx / normalLength;
-    const ny = vy / normalLength;
-
-    ball.x = px + nx * (minDist + 0.5);
-    ball.y = py + ny * (minDist + 0.5);
-
-    const vn = ball.vx * nx + ball.vy * ny;
-
-    if (vn < 0) {
-        ball.vx -= 1.75 * vn * nx;
-        ball.vy -= 1.75 * vn * ny;
+        if (dot < 0) {
+            ball.vx -= (1 + bounce) * dot * nx;
+            ball.vy -= (1 + bounce) * dot * ny;
+        }
     }
 }
 
-function collideWithFlipper(flipper, pressed, isLeft, now) {
-    if (!ballInPlay) return;
+function collideWithFlipper(f, side) {
+    let angle;
 
-    const seg = getFlipperSegment(flipper, pressed);
-    const dx = seg.x2 - seg.x1;
-    const dy = seg.y2 - seg.y1;
-    const len2 = dx * dx + dy * dy;
-
-    let t = (
-        (ball.x - seg.x1) * dx +
-        (ball.y - seg.y1) * dy
-    ) / len2;
-
-    t = Math.max(0, Math.min(1, t));
-
-    const nearestX = seg.x1 + t * dx;
-    const nearestY = seg.y1 + t * dy;
-
-    let diffX = ball.x - nearestX;
-    let diffY = ball.y - nearestY;
-
-    let distance = Math.hypot(diffX, diffY);
-    const minDistance = ball.r + seg.radius;
-
-    if (distance >= minDistance) return;
-
-    if (distance < 0.001) {
-        diffX = 0;
-        diffY = -1;
-        distance = 1;
+    if (side === "left") {
+        angle = leftPressed ? -0.55 : 0.25;
+    } else {
+        angle = rightPressed ? Math.PI + 0.55 : Math.PI - 0.25;
     }
 
-    const nx = diffX / distance;
-    const ny = diffY / distance;
+    const x2 = f.x + Math.cos(angle) * f.length;
+    const y2 = f.y + Math.sin(angle) * f.length;
 
-    ball.x = nearestX + nx * (minDistance + 0.5);
-    ball.y = nearestY + ny * (minDistance + 0.5);
-
-    const vn = ball.vx * nx + ball.vy * ny;
-
-    if (vn < 0) {
-        ball.vx -= 1.8 * vn * nx;
-        ball.vy -= 1.8 * vn * ny;
-    }
-
-    if (pressed && now - flipper.lastHit > 100) {
-        ball.vy = Math.min(ball.vy, -10.5);
-        ball.vx += isLeft ? 2.2 : -2.2;
-
-        flipper.lastHit = now;
-        addScore(10);
-        playSound(520, 0.06);
-    }
-
-    limitSpeed();
+    collideWithSegment(f.x, f.y, x2, y2, 7, 1.15);
 }
 
 function updatePhysics(dt) {
-    if (!ballInPlay || gameOver) return;
+    if (!ball.active || gameOver) return;
 
-    const now = performance.now();
     const steps = Math.max(1, Math.ceil(dt / 2));
     const step = dt / steps;
 
-    for (let i = 0; i < steps; i++) {
+    for (let s = 0; s < steps; s++) {
+        // Durante o lançamento, a bola segue livre pelo corredor.
+        if (launching && launchStage === "lane") {
+            ball.x = 364;
+            ball.vx = 0;
+
+            // Quando chega à abertura superior, vira para a esquerda.
+            if (ball.y <= LANE_WALL_TOP - ball.r) {
+                launchStage = "entering";
+                ball.vx = -3.0;
+                ball.vy = -2.0;
+            }
+        }
+
         ball.vy += GRAVITY * step;
 
         ball.x += ball.vx * step;
         ball.y += ball.vy * step;
 
-        // Paredes externas.
-        if (ball.x - ball.r < 12) {
-            ball.x = 12 + ball.r;
-            ball.vx = Math.abs(ball.vx) * 0.85;
-        }
-
-        if (ball.x + ball.r > 388) {
-            ball.x = 388 - ball.r;
-            ball.vx = -Math.abs(ball.vx) * 0.85;
-        }
-
-        if (ball.y - ball.r < 12) {
+        // Limite superior: não deixa a bola sair da tela.
+        if (ball.y < 12 + ball.r) {
             ball.y = 12 + ball.r;
-            ball.vy = Math.abs(ball.vy) * 0.85;
+            ball.vy = Math.abs(ball.vy) * 0.75;
         }
 
-        // Trilhos inferiores diagonais.
-        collideWithLine(22, 480, 88, 540, 5);
-        collideWithLine(378, 480, 312, 540, 5);
-
-        /*
-          BARREIRA DO CORREDOR:
-          Existe somente entre Y=480 e Y=610.
-          A abertura acima de Y=480 permite que a bola
-          atravesse para o tabuleiro.
-        */
-        collideWithLine(
-            CORRIDOR_X,
-            CORRIDOR_WALL_TOP,
-            CORRIDOR_X,
-            CORRIDOR_WALL_BOTTOM,
-            3
-        );
-
-        for (const pin of pins) {
-            circleCollision(pin, 5);
+        // Parede esquerda.
+        if (ball.x < 12 + ball.r) {
+            ball.x = 12 + ball.r;
+            ball.vx = Math.abs(ball.vx) * 0.8;
         }
 
-        for (const bumper of bumpers) {
-            circleCollision(bumper, 25);
+        // Parede direita exterior.
+        if (ball.x > 388 - ball.r) {
+            ball.x = 388 - ball.r;
+            ball.vx = -Math.abs(ball.vx) * 0.8;
         }
 
-        collideWithFlipper(leftFlipper, leftPressed, true, now);
-        collideWithFlipper(rightFlipper, rightPressed, false, now);
+        // Parede que separa o corredor do jogo.
+        // IMPORTANTE: ela só existe abaixo de y=112.
+        // Não há parede na abertura superior por onde a bola entra.
+        if (
+            ball.y + ball.r > LANE_WALL_TOP &&
+            ball.y - ball.r < LANE_WALL_BOTTOM &&
+            ball.x + ball.r > LANE_LEFT - 3 &&
+            ball.x < LANE_LEFT &&
+            !(launching && launchStage === "lane")
+        ) {
+            ball.x = LANE_LEFT - ball.r - 3;
+            ball.vx = -Math.abs(ball.vx) * 0.75;
+        }
 
-        limitSpeed();
+        // Parede direita do corredor, com passagem livre para cima.
+        if (
+            ball.y > LANE_WALL_TOP &&
+            ball.y < LANE_WALL_BOTTOM &&
+            ball.x + ball.r > LANE_RIGHT
+        ) {
+            ball.x = LANE_RIGHT - ball.r;
+            ball.vx = -Math.abs(ball.vx) * 0.7;
+        }
 
-        if (ball.y - ball.r > H) {
-            loseBall();
+        // Obstáculos dentro da área principal.
+        if (!launching || launchStage !== "lane") {
+            for (const b of bumpers) {
+                collideWithCircle(b, b.r, 1.25, 10);
+            }
+
+            for (const p of pegs) {
+                collideWithCircle(p, p.r, 0.9, 1);
+            }
+
+            collideWithSegment(20, 115, 20, 540, 5, 0.8);
+            collideWithSegment(20, 540, 65, 580, 5, 0.8);
+
+            collideWithFlipper(flippers.left, "left");
+            collideWithFlipper(flippers.right, "right");
+        }
+
+        clampBallSpeed();
+
+        // A bola caiu: desconta uma vida e permite lançar novamente.
+        if (ball.y > H + 20) {
+            balls--;
+            updateInfo();
+
+            if (balls <= 0) {
+                gameOver = true;
+                ball.active = false;
+            } else {
+                resetBall();
+            }
             return;
+        }
+
+        // Quando cruza a abertura, termina o lançamento e entra no jogo.
+        if (
+            launching &&
+            launchStage === "entering" &&
+            ball.x < LANE_LEFT - ball.r - 2
+        ) {
+            launching = false;
+            launchStage = "playing";
+            ball.vx = -2.5;
+            ball.vy = 1.0;
         }
     }
 }
 
-function drawFlipper(flipper, pressed) {
-    const seg = getFlipperSegment(flipper, pressed);
-
+function drawCircle(x, y, r, color, glow) {
     ctx.save();
-    ctx.lineCap = "round";
-    ctx.lineWidth = flipper.radius * 2;
-    ctx.strokeStyle = pressed ? "#fff36d" : "#ff9e43";
-
+    ctx.shadowBlur = glow || 0;
+    ctx.shadowColor = color;
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(seg.x1, seg.y1);
-    ctx.lineTo(seg.x2, seg.y2);
-    ctx.stroke();
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#fff8d0";
-
-    ctx.beginPath();
-    ctx.moveTo(seg.x1, seg.y1);
-    ctx.lineTo(seg.x2, seg.y2);
-    ctx.stroke();
-
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
 }
 
-function drawPivot(flipper) {
-    ctx.beginPath();
-    ctx.arc(flipper.x, flipper.y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = "#c3d8ff";
-    ctx.fill();
+function drawFlipper(f, side) {
+    const angle = side === "left"
+        ? (leftPressed ? -0.55 : 0.25)
+        : (rightPressed ? Math.PI + 0.55 : Math.PI - 0.25);
+
+    const x2 = f.x + Math.cos(angle) * f.length;
+    const y2 = f.y + Math.sin(angle) * f.length;
+
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineWidth = 17;
+    ctx.strokeStyle = "#ff8a00";
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "#ffb300";
 
     ctx.beginPath();
-    ctx.arc(flipper.x, flipper.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#465a8d";
-    ctx.fill();
+    ctx.moveTo(f.x, f.y);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    ctx.lineWidth = 11;
+    ctx.strokeStyle = "#ffe83a";
+    ctx.beginPath();
+    ctx.moveTo(f.x, f.y);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    drawCircle(f.x, f.y, 7, "#f4ffff", 5);
+    ctx.restore();
 }
 
-function drawBoard() {
+function drawGame() {
     ctx.clearRect(0, 0, W, H);
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, H);
-    gradient.addColorStop(0, "#101b40");
-    gradient.addColorStop(1, "#080b19");
+    // Fundo da mesa.
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#0b286f");
+    bg.addColorStop(0.55, "#071747");
+    bg.addColorStop(1, "#03102f");
 
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Contorno superior e parede direita externa.
-    ctx.strokeStyle = "#3ee8ff";
-    ctx.lineWidth = 3;
+    // Borda externa.
+    ctx.strokeStyle = "#00dfff";
+    ctx.lineWidth = 5;
+    ctx.strokeRect(8, 8, 384, 684);
+
+    // Área de jogo à esquerda.
+    ctx.fillStyle = "#07153f";
+    ctx.fillRect(17, 18, LANE_LEFT - 18, 660);
+
+    // Corredor de lançamento à direita.
+    ctx.fillStyle = "#101d56";
+    ctx.fillRect(LANE_LEFT, 18, LANE_RIGHT - LANE_LEFT, 660);
+
+    // Trilhos do corredor.
+    ctx.strokeStyle = "#c16bff";
+    ctx.lineWidth = 5;
 
     ctx.beginPath();
-    ctx.moveTo(12, 12);
-    ctx.lineTo(388, 12);
-    ctx.lineTo(388, 620);
+    ctx.moveTo(LANE_LEFT, LANE_WALL_TOP);
+    ctx.lineTo(LANE_LEFT, LANE_WALL_BOTTOM);
     ctx.stroke();
 
-    // Parede esquerda.
+    ctx.strokeStyle = "#8e51ff";
     ctx.beginPath();
-    ctx.moveTo(12, 12);
-    ctx.lineTo(12, 480);
-    ctx.lineTo(88, 540);
+    ctx.moveTo(LANE_RIGHT, 18);
+    ctx.lineTo(LANE_RIGHT, 678);
     ctx.stroke();
 
-    /*
-      CORREDOR VISÍVEL:
-      A barra lilás antiga foi substituída por esta
-      barreira mais à esquerda, começando em Y=480.
-      A abertura superior fica livre para a bola entrar.
-    */
-    ctx.strokeStyle = "#b98cff";
-    ctx.lineWidth = 4;
-
+    // Setas luminosas mostrando o caminho até a abertura.
+    ctx.fillStyle = "#00eaff";
     ctx.beginPath();
-    ctx.moveTo(CORRIDOR_X, CORRIDOR_WALL_TOP);
-    ctx.lineTo(CORRIDOR_X, CORRIDOR_WALL_BOTTOM);
-    ctx.stroke();
+    ctx.moveTo(364, 35);
+    ctx.lineTo(353, 53);
+    ctx.lineTo(364, 48);
+    ctx.lineTo(375, 53);
+    ctx.closePath();
+    ctx.fill();
 
-    // Trilhos diagonais.
-    ctx.strokeStyle = "#6578c9";
-    ctx.lineWidth = 4;
-
-    ctx.beginPath();
-    ctx.moveTo(22, 480);
-    ctx.lineTo(88, 540);
-    ctx.stroke();
-
-    // O trilho direito termina antes do corredor.
-    ctx.beginPath();
-    ctx.moveTo(378, 480);
-    ctx.lineTo(340, 515);
-    ctx.stroke();
+    ctx.fillStyle = "#8bdfff";
+    ctx.font = "bold 15px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("↑", 364, 83);
 
     // Pinos.
-    for (const pin of pins) {
-        ctx.beginPath();
-        ctx.arc(pin.x, pin.y, pin.r, 0, Math.PI * 2);
-        ctx.fillStyle = "#e4edff";
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(pin.x - 2, pin.y - 2, 2, 0, Math.PI * 2);
-        ctx.fillStyle = "#ffffff";
-        ctx.fill();
+    for (const p of pegs) {
+        drawCircle(p.x, p.y, p.r + 2, "#0077ff", 5);
+        drawCircle(p.x, p.y, p.r, "#e5faff", 3);
+        drawCircle(p.x - 1, p.y - 1, 2, "#ffffff", 2);
     }
 
     // Bumpers.
-    for (const bumper of bumpers) {
-        const g = ctx.createRadialGradient(
-            bumper.x - 6,
-            bumper.y - 6,
-            2,
-            bumper.x,
-            bumper.y,
-            bumper.r
-        );
+    for (const b of bumpers) {
+        drawCircle(b.x, b.y, b.r + 6, "#005cff", 10);
+        drawCircle(b.x, b.y, b.r, "#ff5b00", 12);
 
-        g.addColorStop(0, "#ffffff");
-        g.addColorStop(0.3, "#ffec72");
-        g.addColorStop(1, "#ff6a00");
-
+        ctx.strokeStyle = "#ffdf5c";
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(bumper.x, bumper.y, bumper.r, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
-
-        ctx.strokeStyle = "#fff3b0";
-        ctx.lineWidth = 2;
+        ctx.arc(b.x, b.y, b.r - 5, 0, Math.PI * 2);
         ctx.stroke();
-    }
 
-    drawFlipper(leftFlipper, leftPressed);
-    drawFlipper(rightFlipper, rightPressed);
+        drawCircle(b.x, b.y, b.r - 9, "#ffb300", 5);
 
-    drawPivot(leftFlipper);
-    drawPivot(rightFlipper);
-
-    if (!ballInPlay && !gameOver) {
-        ctx.fillStyle = "#a7b2d1";
-        ctx.font = "12px Arial";
+        ctx.fillStyle = "#fff6a6";
+        ctx.font = "bold 22px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("TOQUE EM LANÇAR", 355, 650);
+        ctx.textBaseline = "middle";
+        ctx.fillText("★", b.x, b.y + 1);
     }
 
-    if (ballInPlay) {
-        const g = ctx.createRadialGradient(
-            ball.x - 3,
-            ball.y - 4,
-            1,
-            ball.x,
-            ball.y,
-            ball.r + 2
-        );
+    // Trilhos inclinados laterais, longe do corredor.
+    ctx.strokeStyle = "#078fff";
+    ctx.lineWidth = 7;
+    ctx.lineCap = "round";
 
-        g.addColorStop(0, "#ffffff");
-        g.addColorStop(0.45, "#e1f6ff");
-        g.addColorStop(1, "#53cfff");
+    ctx.beginPath();
+    ctx.moveTo(20, 180);
+    ctx.lineTo(48, 235);
+    ctx.lineTo(22, 280);
+    ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-        ctx.fillStyle = g;
-        ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(310, 180);
+    ctx.lineTo(326, 235);
+    ctx.lineTo(310, 280);
+    ctx.stroke();
 
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
-        ctx.stroke();
+    // Guias inferiores.
+    ctx.strokeStyle = "#187aff";
+    ctx.lineWidth = 7;
+
+    ctx.beginPath();
+    ctx.moveTo(20, 500);
+    ctx.lineTo(65, 550);
+    ctx.lineTo(90, 585);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(310, 500);
+    ctx.lineTo(300, 550);
+    ctx.lineTo(285, 585);
+    ctx.stroke();
+
+    // Flippers.
+    drawFlipper(flippers.left, "left");
+    drawFlipper(flippers.right, "right");
+
+    // Compartimento inferior da bola no corredor.
+    ctx.fillStyle = "#030b26";
+    ctx.fillRect(347, 620, 34, 55);
+
+    ctx.strokeStyle = "#a66aff";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(347, 620, 34, 55);
+
+    // Bola.
+    if (ball.active) {
+        drawCircle(ball.x, ball.y, ball.r + 3, "#00aaff", 10);
+        drawCircle(ball.x, ball.y, ball.r, "#f2ffff", 5);
+        drawCircle(ball.x - 2, ball.y - 2, 3, "#ffffff", 3);
     }
+
+    // Mensagens.
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
     if (gameOver) {
-        ctx.fillStyle = "rgba(0,0,0,0.78)";
-        ctx.fillRect(25, 260, 350, 120);
+        ctx.fillStyle = "rgba(0,0,0,0.8)";
+        ctx.fillRect(35, 270, 300, 100);
 
-        ctx.fillStyle = "#ffe66d";
+        ctx.fillStyle = "#ff526f";
         ctx.font = "bold 28px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("FIM DE JOGO", 200, 310);
+        ctx.fillText("FIM DE JOGO", 185, 305);
 
         ctx.fillStyle = "#ffffff";
-        ctx.font = "18px Arial";
-        ctx.fillText("Toque em Reiniciar", 200, 350);
+        ctx.font = "16px Arial";
+        ctx.fillText("Toque em REINICIAR", 185, 340);
+    } else if (!launched) {
+        ctx.fillStyle = "#c5faff";
+        ctx.font = "bold 12px Arial";
+        ctx.fillText("TOQUE EM LANÇAR", 364, 575);
     }
-}
-
-function setupFlipperButton(button, side) {
-    function press(event) {
-        event.preventDefault();
-
-        if (side === "left") {
-            leftPressed = true;
-        } else {
-            rightPressed = true;
-        }
-
-        button.classList.add("active");
-    }
-
-    function release(event) {
-        if (event) event.preventDefault();
-
-        if (side === "left") {
-            leftPressed = false;
-        } else {
-            rightPressed = false;
-        }
-
-        button.classList.remove("active");
-    }
-
-    button.addEventListener("pointerdown", press);
-    button.addEventListener("pointerup", release);
-    button.addEventListener("pointercancel", release);
-    button.addEventListener("lostpointercapture", release);
-
-    window.addEventListener("pointerup", release);
-    window.addEventListener("blur", release);
 }
 
 function gameLoop(timestamp) {
-    if (!lastTime) {
-        lastTime = timestamp;
-    }
+    if (!lastTime) lastTime = timestamp;
 
-    let dt = timestamp - lastTime;
+    let dt = (timestamp - lastTime) / 16.667;
     lastTime = timestamp;
 
-    dt = Math.min(dt, 12);
+    dt = Math.min(dt, 2);
 
-    updatePhysics(dt / 16.67);
-    drawBoard();
+    if (!gameOver) {
+        updatePhysics(dt);
+    }
 
-    requestAnimationFrame(gameLoop);
+    drawGame();
+    animationId = requestAnimationFrame(gameLoop);
 }
 
-setupFlipperButton(leftBtn, "left");
-setupFlipperButton(rightBtn, "right");
+document.getElementById("launchBtn").addEventListener("click", launchBall);
+document.getElementById("restartBtn").addEventListener("click", restartGame);
 
-launchBtn.addEventListener("pointerdown", function(event) {
-    event.preventDefault();
-    launchBall();
-});
-
-restartBtn.addEventListener("click", restartGame);
-
-updateBtn.addEventListener("click", function() {
+document.getElementById("updateBtn").addEventListener("click", function() {
     const url = new URL(window.location.href);
     url.searchParams.set("atualizar", Date.now());
     window.location.replace(url.toString());
 });
 
-canvas.addEventListener("contextmenu", function(event) {
-    event.preventDefault();
+function setButtonHold(buttonId, side) {
+    const btn = document.getElementById(buttonId);
+
+    const press = function(e) {
+        e.preventDefault();
+        if (side === "left") leftPressed = true;
+        else rightPressed = true;
+    };
+
+    const release = function(e) {
+        e.preventDefault();
+        if (side === "left") leftPressed = false;
+        else rightPressed = false;
+    };
+
+    btn.addEventListener("pointerdown", press);
+    btn.addEventListener("pointerup", release);
+    btn.addEventListener("pointerleave", release);
+    btn.addEventListener("pointercancel", release);
+}
+
+setButtonHold("leftBtn", "left");
+setButtonHold("rightBtn", "right");
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        leftPressed = true;
+        e.preventDefault();
+    }
+
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        rightPressed = true;
+        e.preventDefault();
+    }
+
+    if (e.key === " " || e.key === "Enter") {
+        launchBall();
+        e.preventDefault();
+    }
 });
 
+document.addEventListener("keyup", function(e) {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        leftPressed = false;
+    }
+
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        rightPressed = false;
+    }
+});
+
+updateInfo();
 resetBall();
-drawBoard();
-requestAnimationFrame(gameLoop);
+drawGame();
+
+if (animationId !== null) {
+    cancelAnimationFrame(animationId);
+}
+
+animationId = requestAnimationFrame(gameLoop);
 </script>
 
 </body>
