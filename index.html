@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Super Pinball Arcade V5</title>
+<title>Super Pinball Arcade V6</title>
 
 <style>
 * {
@@ -20,24 +20,24 @@ body {
     text-align: center;
     min-height: 100dvh;
     overflow-x: hidden;
-    padding: 5px;
+    padding: 4px;
     touch-action: manipulation;
 }
 
 h1 {
-    font-size: clamp(20px, 5vw, 28px);
-    margin: 4px 0 6px;
+    font-size: clamp(19px, 5vw, 27px);
+    margin: 4px 0 5px;
     color: #ffe66d;
 }
 
 .info {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 13px;
     flex-wrap: wrap;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .info span {
@@ -49,13 +49,12 @@ h1 {
     margin: 0 auto;
     width: min(98vw, 520px);
     height: auto;
-    max-height: 76dvh;
+    max-height: 68dvh;
     aspect-ratio: 400 / 700;
-    object-fit: contain;
     border: 3px solid #5deaff;
-    border-radius: 10px;
+    border-radius: 9px;
     background: #080d20;
-    box-shadow: 0 0 14px #00d9ff70;
+    box-shadow: 0 0 12px #00d9ff70;
     touch-action: none;
 }
 
@@ -63,16 +62,16 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
-    margin: 8px auto 5px;
+    gap: 7px;
+    margin: 7px auto 4px;
     max-width: 520px;
 }
 
 button {
     border: none;
-    border-radius: 10px;
-    padding: 12px 15px;
-    font-size: 16px;
+    border-radius: 9px;
+    padding: 8px 11px;
+    font-size: 14px;
     font-weight: bold;
     color: #101426;
     background: #ffe66d;
@@ -92,7 +91,7 @@ button.active {
 
 .flipper-button {
     flex: 1;
-    max-width: 120px;
+    max-width: 110px;
 }
 
 #launch {
@@ -104,20 +103,22 @@ button.active {
 }
 
 #update {
-    margin-top: 4px;
-    padding: 8px 12px;
+    display: block;
+    margin: 6px auto;
+    padding: 8px 14px;
     font-size: 13px;
     background: #d6c4ff;
+    touch-action: manipulation;
 }
 
 .tip {
-    font-size: 12px;
+    font-size: 11px;
     color: #c9d4ee;
-    margin: 5px auto;
+    margin: 4px auto;
     max-width: 500px;
 }
 
-@media (max-height: 600px) {
+@media (max-height: 650px) {
     h1 {
         font-size: 18px;
         margin: 2px;
@@ -125,19 +126,25 @@ button.active {
 
     .info {
         margin-bottom: 3px;
+        font-size: 12px;
     }
 
     #game {
-        max-height: 68dvh;
+        max-height: 60dvh;
     }
 
     button {
-        padding: 8px 10px;
-        font-size: 14px;
+        padding: 7px 9px;
+        font-size: 13px;
     }
 
     .controls {
-        margin: 5px auto 2px;
+        margin: 5px auto 3px;
+    }
+
+    #update {
+        margin: 4px auto;
+        padding: 6px 12px;
     }
 }
 </style>
@@ -166,10 +173,10 @@ button.active {
 </div>
 
 <div class="tip">
-    Segure ESQ. e DIR. para acionar as palhetas. Use LANÇAR para lançar a bola.
+    Segure ESQ. e DIR. para rebater a bola. Toque em LANÇAR para começar.
 </div>
 
-<button id="update">🔄 Atualizar jogo</button>
+<button id="update">🔄 ATUALIZAR JOGO</button>
 
 <script>
 "use strict";
@@ -191,7 +198,7 @@ const W = canvas.width;
 const H = canvas.height;
 
 const BALL_RADIUS = 7;
-const MAX_SPEED = 11;
+const MAX_SPEED = 12;
 const GRAVITY = 0.13;
 
 let score = 0;
@@ -203,11 +210,10 @@ let launchReady = true;
 let leftPressed = false;
 let rightPressed = false;
 let lastTime = 0;
-let animationId = 0;
 let audioContext = null;
 
 try {
-    record = Number(localStorage.getItem("pinballRecordV5")) || 0;
+    record = Number(localStorage.getItem("pinballRecordV6")) || 0;
 } catch (e) {
     record = 0;
 }
@@ -223,13 +229,13 @@ const ball = {
 };
 
 /*
-  As palhetas usam a mesma geometria
-  para desenho e colisão.
+  As pontas ficam separadas quando levantadas.
+  A geometria é compartilhada com a colisão.
 */
 const leftFlipper = {
     x: 112,
     y: 595,
-    length: 82,
+    length: 76,
     radius: 10,
     restAngle: 0.20,
     raisedAngle: -0.42,
@@ -240,7 +246,7 @@ const leftFlipper = {
 const rightFlipper = {
     x: 288,
     y: 595,
-    length: 82,
+    length: 76,
     radius: 10,
     restAngle: Math.PI - 0.20,
     raisedAngle: Math.PI + 0.42,
@@ -271,100 +277,19 @@ const pins = [
     { x: 310, y: 465, r: 6 }
 ];
 
-/*
-  Segmento da palheta.
-  O ângulo usado aqui também é usado no desenho.
-*/
-function getFlipperSegment(flipper, pressed, isLeft) {
+function getFlipperSegment(flipper, pressed) {
     const angle = pressed
         ? flipper.raisedAngle
         : flipper.restAngle;
 
-    const x2 = flipper.x + Math.cos(angle) * flipper.length;
-    const y2 = flipper.y + Math.sin(angle) * flipper.length;
-
     return {
         x1: flipper.x,
         y1: flipper.y,
-        x2,
-        y2,
+        x2: flipper.x + Math.cos(angle) * flipper.length,
+        y2: flipper.y + Math.sin(angle) * flipper.length,
         radius: flipper.radius,
         angle
     };
-}
-
-/*
-  Detecta colisão da bola com um segmento.
-  A bola é empurrada para fora da palheta e recebe
-  uma velocidade de rebote.
-*/
-function collideWithFlipper(flipper, pressed, isLeft, now) {
-    if (!ballInPlay) return;
-
-    const seg = getFlipperSegment(flipper, pressed, isLeft);
-
-    const dx = seg.x2 - seg.x1;
-    const dy = seg.y2 - seg.y1;
-    const lengthSquared = dx * dx + dy * dy;
-
-    if (lengthSquared === 0) return;
-
-    let t = (
-        (ball.x - seg.x1) * dx +
-        (ball.y - seg.y1) * dy
-    ) / lengthSquared;
-
-    t = Math.max(0, Math.min(1, t));
-
-    const nearestX = seg.x1 + t * dx;
-    const nearestY = seg.y1 + t * dy;
-
-    let diffX = ball.x - nearestX;
-    let diffY = ball.y - nearestY;
-
-    let distance = Math.hypot(diffX, diffY);
-    const minDistance = ball.r + seg.radius;
-
-    if (distance >= minDistance) return;
-
-    if (distance < 0.001) {
-        diffX = 0;
-        diffY = -1;
-        distance = 1;
-    }
-
-    const nx = diffX / distance;
-    const ny = diffY / distance;
-
-    ball.x = nearestX + nx * (minDistance + 0.5);
-    ball.y = nearestY + ny * (minDistance + 0.5);
-
-    const velocityAlongNormal = ball.vx * nx + ball.vy * ny;
-
-    if (velocityAlongNormal < 0) {
-        ball.vx -= 1.75 * velocityAlongNormal * nx;
-        ball.vy -= 1.75 * velocityAlongNormal * ny;
-    }
-
-    /*
-      Quando a palheta está levantada,
-      ela dá um impulso extra para lançar a bola.
-    */
-    if (pressed && now - flipper.lastHit > 90) {
-        ball.vy = Math.min(ball.vy, -9.5);
-
-        if (isLeft) {
-            ball.vx += 2.1;
-        } else {
-            ball.vx -= 2.1;
-        }
-
-        flipper.lastHit = now;
-        addScore(10);
-        playSound(520, 0.06);
-    }
-
-    limitSpeed();
 }
 
 function limitSpeed() {
@@ -385,7 +310,7 @@ function addScore(points) {
         recordText.textContent = record;
 
         try {
-            localStorage.setItem("pinballRecordV5", String(record));
+            localStorage.setItem("pinballRecordV6", String(record));
         } catch (e) {}
     }
 }
@@ -407,16 +332,18 @@ function playSound(frequency = 440, duration = 0.07) {
 
         oscillator.type = "sine";
         oscillator.frequency.value = frequency;
-        gain.gain.value = 0.07;
+        gain.gain.value = 0.06;
 
         oscillator.connect(gain);
         gain.connect(audioContext.destination);
 
         oscillator.start();
+
         gain.gain.exponentialRampToValueAtTime(
             0.001,
             audioContext.currentTime + duration
         );
+
         oscillator.stop(audioContext.currentTime + duration);
     } catch (e) {}
 }
@@ -438,7 +365,9 @@ function resetBall() {
 }
 
 function launchBall() {
-    if (gameOver || balls <= 0 || ballInPlay || !launchReady) return;
+    if (gameOver || balls <= 0 || ballInPlay || !launchReady) {
+        return;
+    }
 
     launchReady = false;
     ballInPlay = true;
@@ -446,10 +375,11 @@ function launchBall() {
     ball.x = 355;
     ball.y = 585;
 
-    ball.vx = -1.5 - Math.random() * 0.7;
-    ball.vy = -8.0;
+    // Lançamento mais forte.
+    ball.vx = -2.0 - Math.random() * 0.8;
+    ball.vy = -11.5;
 
-    playSound(300, 0.12);
+    playSound(420, 0.14);
 }
 
 function loseBall() {
@@ -501,8 +431,8 @@ function circleCollision(object, points = 10) {
         ball.vy -= 1.8 * velocityAlongNormal * ny;
     }
 
-    ball.vx += nx * 1.0;
-    ball.vy += ny * 1.0;
+    ball.vx += nx * 0.7;
+    ball.vy += ny * 0.7;
 
     limitSpeed();
     addScore(points);
@@ -514,7 +444,11 @@ function collideWithLine(x1, y1, x2, y2, radius = 5) {
     const dy = y2 - y1;
     const len2 = dx * dx + dy * dy;
 
-    let t = ((ball.x - x1) * dx + (ball.y - y1) * dy) / len2;
+    let t = (
+        (ball.x - x1) * dx +
+        (ball.y - y1) * dy
+    ) / len2;
+
     t = Math.max(0, Math.min(1, t));
 
     const px = x1 + t * dx;
@@ -548,17 +482,77 @@ function collideWithLine(x1, y1, x2, y2, radius = 5) {
     }
 }
 
+function collideWithFlipper(flipper, pressed, isLeft, now) {
+    if (!ballInPlay) return;
+
+    const seg = getFlipperSegment(flipper, pressed);
+
+    const dx = seg.x2 - seg.x1;
+    const dy = seg.y2 - seg.y1;
+    const len2 = dx * dx + dy * dy;
+
+    let t = (
+        (ball.x - seg.x1) * dx +
+        (ball.y - seg.y1) * dy
+    ) / len2;
+
+    t = Math.max(0, Math.min(1, t));
+
+    const nearestX = seg.x1 + t * dx;
+    const nearestY = seg.y1 + t * dy;
+
+    let diffX = ball.x - nearestX;
+    let diffY = ball.y - nearestY;
+
+    let distance = Math.hypot(diffX, diffY);
+    const minDistance = ball.r + seg.radius;
+
+    if (distance >= minDistance) return;
+
+    if (distance < 0.001) {
+        diffX = 0;
+        diffY = -1;
+        distance = 1;
+    }
+
+    const nx = diffX / distance;
+    const ny = diffY / distance;
+
+    ball.x = nearestX + nx * (minDistance + 0.5);
+    ball.y = nearestY + ny * (minDistance + 0.5);
+
+    const velocityAlongNormal = ball.vx * nx + ball.vy * ny;
+
+    if (velocityAlongNormal < 0) {
+        ball.vx -= 1.8 * velocityAlongNormal * nx;
+        ball.vy -= 1.8 * velocityAlongNormal * ny;
+    }
+
+    if (pressed && now - flipper.lastHit > 100) {
+        ball.vy = Math.min(ball.vy, -10.5);
+
+        if (isLeft) {
+            ball.vx += 2.2;
+        } else {
+            ball.vx -= 2.2;
+        }
+
+        flipper.lastHit = now;
+        addScore(10);
+        playSound(520, 0.06);
+    }
+
+    limitSpeed();
+}
+
 function updatePhysics(dt) {
     if (!ballInPlay || gameOver) return;
 
     const now = performance.now();
 
-    /*
-      Dividimos o movimento em pequenos passos
-      para reduzir a chance de a bola atravessar
-      as palhetas em alta velocidade.
-    */
-    const steps = Math.max(1, Math.ceil(dt / 4));
+    // Pequenos passos de física ajudam a evitar que
+    // a bola atravesse as palhetas em alta velocidade.
+    const steps = Math.max(1, Math.ceil(dt / 2));
     const step = dt / steps;
 
     for (let i = 0; i < steps; i++) {
@@ -571,13 +565,11 @@ function updatePhysics(dt) {
         if (ball.x - ball.r < 12) {
             ball.x = 12 + ball.r;
             ball.vx = Math.abs(ball.vx) * 0.85;
-            playSound(240, 0.025);
         }
 
         if (ball.x + ball.r > 388) {
             ball.x = 388 - ball.r;
             ball.vx = -Math.abs(ball.vx) * 0.85;
-            playSound(240, 0.025);
         }
 
         // Parede superior.
@@ -590,11 +582,9 @@ function updatePhysics(dt) {
         collideWithLine(22, 480, 88, 540, 5);
         collideWithLine(378, 480, 312, 540, 5);
 
-        // Trilhos da área de lançamento.
-        collideWithLine(337, 420, 337, 620, 5);
-        collideWithLine(337, 620, 390, 620, 5);
+        // Corredor de lançamento: sem barreira inferior.
+        collideWithLine(337, 420, 337, 610, 5);
 
-        // Pinos e bumpers.
         for (const pin of pins) {
             circleCollision(pin, 5);
         }
@@ -603,10 +593,7 @@ function updatePhysics(dt) {
             circleCollision(bumper, 25);
         }
 
-        /*
-          Colisão com a posição REAL das palhetas.
-          O mesmo segmento é utilizado no desenho.
-        */
+        // Colisão sincronizada com o desenho das palhetas.
         leftFlipper.angle = leftPressed
             ? leftFlipper.raisedAngle
             : leftFlipper.restAngle;
@@ -627,10 +614,46 @@ function updatePhysics(dt) {
     }
 }
 
+function drawFlipper(flipper, pressed) {
+    const seg = getFlipperSegment(flipper, pressed);
+
+    ctx.save();
+    ctx.lineCap = "round";
+
+    ctx.lineWidth = flipper.radius * 2;
+    ctx.strokeStyle = pressed ? "#fff36d" : "#ff9e43";
+
+    ctx.beginPath();
+    ctx.moveTo(seg.x1, seg.y1);
+    ctx.lineTo(seg.x2, seg.y2);
+    ctx.stroke();
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#fff8d0";
+
+    ctx.beginPath();
+    ctx.moveTo(seg.x1, seg.y1);
+    ctx.lineTo(seg.x2, seg.y2);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function drawPivot(flipper) {
+    ctx.beginPath();
+    ctx.arc(flipper.x, flipper.y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = "#c3d8ff";
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(flipper.x, flipper.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "#465a8d";
+    ctx.fill();
+}
+
 function drawBoard() {
     ctx.clearRect(0, 0, W, H);
 
-    // Fundo.
     const gradient = ctx.createLinearGradient(0, 0, 0, H);
     gradient.addColorStop(0, "#101b40");
     gradient.addColorStop(1, "#080b19");
@@ -638,7 +661,7 @@ function drawBoard() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // Contorno interno.
+    // Contorno esquerdo e superior.
     ctx.strokeStyle = "#3ee8ff";
     ctx.lineWidth = 3;
 
@@ -646,7 +669,6 @@ function drawBoard() {
     ctx.moveTo(12, 12);
     ctx.lineTo(388, 12);
     ctx.lineTo(388, 620);
-    ctx.lineTo(312, 620);
     ctx.stroke();
 
     ctx.beginPath();
@@ -655,23 +677,23 @@ function drawBoard() {
     ctx.lineTo(88, 540);
     ctx.stroke();
 
-    // Corredor da bola.
+    // Corredor de lançamento aberto na parte inferior.
     ctx.strokeStyle = "#ffb84d";
     ctx.lineWidth = 3;
 
     ctx.beginPath();
     ctx.moveTo(337, 420);
-    ctx.lineTo(337, 620);
-    ctx.lineTo(388, 620);
+    ctx.lineTo(337, 610);
     ctx.stroke();
 
-    // Trilhos decorativos.
+    // Trilhos diagonais.
     ctx.strokeStyle = "#6578c9";
     ctx.lineWidth = 4;
 
     ctx.beginPath();
     ctx.moveTo(22, 480);
     ctx.lineTo(88, 540);
+
     ctx.moveTo(378, 480);
     ctx.lineTo(312, 540);
     ctx.stroke();
@@ -692,8 +714,12 @@ function drawBoard() {
     // Bumpers.
     for (const bumper of bumpers) {
         const g = ctx.createRadialGradient(
-            bumper.x - 6, bumper.y - 6, 2,
-            bumper.x, bumper.y, bumper.r
+            bumper.x - 6,
+            bumper.y - 6,
+            2,
+            bumper.x,
+            bumper.y,
+            bumper.r
         );
 
         g.addColorStop(0, "#ffffff");
@@ -710,15 +736,12 @@ function drawBoard() {
         ctx.stroke();
     }
 
-    // Desenho das palhetas usando o mesmo segmento da colisão.
-    drawFlipper(leftFlipper, leftPressed, true);
-    drawFlipper(rightFlipper, rightPressed, false);
+    drawFlipper(leftFlipper, leftPressed);
+    drawFlipper(rightFlipper, rightPressed);
 
-    // Base das palhetas.
     drawPivot(leftFlipper);
     drawPivot(rightFlipper);
 
-    // Bola.
     if (!ballInPlay && !gameOver) {
         ctx.fillStyle = "#a7b2d1";
         ctx.font = "12px Arial";
@@ -728,8 +751,12 @@ function drawBoard() {
 
     if (ballInPlay) {
         const g = ctx.createRadialGradient(
-            ball.x - 3, ball.y - 4, 1,
-            ball.x, ball.y, ball.r + 2
+            ball.x - 3,
+            ball.y - 4,
+            1,
+            ball.x,
+            ball.y,
+            ball.r + 2
         );
 
         g.addColorStop(0, "#ffffff");
@@ -761,63 +788,6 @@ function drawBoard() {
     }
 }
 
-function drawFlipper(flipper, pressed, isLeft) {
-    const seg = getFlipperSegment(flipper, pressed, isLeft);
-
-    ctx.save();
-
-    ctx.lineCap = "round";
-    ctx.lineWidth = flipper.radius * 2;
-    ctx.strokeStyle = pressed ? "#fff36d" : "#ff9e43";
-
-    ctx.beginPath();
-    ctx.moveTo(seg.x1, seg.y1);
-    ctx.lineTo(seg.x2, seg.y2);
-    ctx.stroke();
-
-    // Contorno claro.
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "#fff8d0";
-
-    ctx.beginPath();
-    ctx.moveTo(seg.x1, seg.y1);
-    ctx.lineTo(seg.x2, seg.y2);
-    ctx.stroke();
-
-    ctx.restore();
-}
-
-function drawPivot(flipper) {
-    ctx.beginPath();
-    ctx.arc(flipper.x, flipper.y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = "#c3d8ff";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(flipper.x, flipper.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#465a8d";
-    ctx.fill();
-}
-
-function gameLoop(timestamp) {
-    if (!lastTime) lastTime = timestamp;
-
-    let dt = timestamp - lastTime;
-    lastTime = timestamp;
-
-    // Evita saltos de física após interrupções do navegador.
-    dt = Math.min(dt, 12);
-
-    updatePhysics(dt / 16.67);
-    drawBoard();
-
-    animationId = requestAnimationFrame(gameLoop);
-}
-
-/*
-  Controles que funcionam por toque ou mouse.
-  pointerdown/pointerup permitem segurar a palheta.
-*/
 function setupFlipperButton(button, side) {
     function press(event) {
         event.preventDefault();
@@ -852,6 +822,21 @@ function setupFlipperButton(button, side) {
     window.addEventListener("blur", release);
 }
 
+function gameLoop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+
+    let dt = timestamp - lastTime;
+    lastTime = timestamp;
+
+    // Evita grandes saltos após pausas do navegador.
+    dt = Math.min(dt, 12);
+
+    updatePhysics(dt / 16.67);
+    drawBoard();
+
+    requestAnimationFrame(gameLoop);
+}
+
 setupFlipperButton(leftBtn, "left");
 setupFlipperButton(rightBtn, "right");
 
@@ -868,15 +853,13 @@ updateBtn.addEventListener("click", function() {
     window.location.replace(url.toString());
 });
 
-// Impede que o toque na tela cause zoom acidental.
 canvas.addEventListener("contextmenu", function(event) {
     event.preventDefault();
 });
 
-// Inicia o jogo.
 resetBall();
 drawBoard();
-animationId = requestAnimationFrame(gameLoop);
+requestAnimationFrame(gameLoop);
 </script>
 
 </body>
