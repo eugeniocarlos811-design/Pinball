@@ -1,11 +1,10 @@
-html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07101e">
-<title>Super Pinball Arcade</title>
+<title>Super Pinball Arcade V2</title>
 
 <style>
 * {
@@ -14,44 +13,35 @@ html
     padding: 0;
 }
 
-html, body {
-    width: 100%;
-    min-height: 100%;
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 7px 8px calc(10px + env(safe-area-inset-bottom));
     background: #07101e;
     color: white;
     font-family: Arial, sans-serif;
-}
-
-body {
-    min-height: 100dvh;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 8px 10px calc(12px + env(safe-area-inset-bottom));
     overflow-x: hidden;
 }
 
-header {
-    width: 100%;
-    text-align: center;
-    flex-shrink: 0;
-}
-
 h1 {
-    color: #39e6ff;
-    font-size: clamp(19px, 5vw, 30px);
-    text-shadow: 0 0 12px #00aaff;
+    text-align: center;
+    color: #36e6ff;
+    font-size: clamp(19px, 5vw, 28px);
+    text-shadow: 0 0 12px #008cff;
     margin: 3px 0 6px;
 }
 
 .info {
     display: flex;
     justify-content: center;
-    gap: 22px;
-    margin-bottom: 7px;
-    font-size: 15px;
+    flex-wrap: wrap;
+    gap: 13px;
+    font-size: 13px;
     font-weight: bold;
+    margin-bottom: 6px;
 }
 
 .info span {
@@ -60,117 +50,112 @@ h1 {
 
 #game {
     display: block;
-    width: auto;
+    width: min(94vw, 390px);
     height: auto;
-    max-width: 94vw;
-    max-height: 54dvh;
-    max-height: 54vh;
+    max-height: 57vh;
+    max-height: 57dvh;
     aspect-ratio: 400 / 650;
-    border: 3px solid #29cfff;
-    border-radius: 12px;
+    border: 2px solid #35dcff;
+    border-radius: 10px;
     background: #081a33;
-    box-shadow: 0 0 18px #008cff88;
+    box-shadow: 0 0 15px #008cff66;
     touch-action: none;
-    flex-shrink: 1;
 }
 
 .controls {
-    width: min(100%, 420px);
-    margin-top: 9px;
+    width: min(94vw, 390px);
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-    flex-shrink: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 8px;
 }
 
 button {
-    min-height: 46px;
-    border: 2px solid #ffffff55;
-    border-radius: 10px;
-    padding: 10px 6px;
+    min-width: 0;
+    min-height: 39px;
+    padding: 5px 2px;
+    border: 1px solid #ffffff66;
+    border-radius: 8px;
     color: white;
-    font-size: 15px;
+    font-size: 12px;
     font-weight: bold;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
 
-#leftBtn, #rightBtn {
-    background: linear-gradient(#18a8e9, #0756a5);
-    font-size: 17px;
+button:active {
+    filter: brightness(1.35);
+    transform: scale(.97);
+}
+
+.flipper {
+    background: linear-gradient(#169fe8, #064c98);
 }
 
 #launchBtn {
-    background: linear-gradient(#ffbd35, #d45b00);
+    background: linear-gradient(#ffb72e, #d85a00);
 }
 
 #restartBtn {
-    background: linear-gradient(#28c76f, #087c3c);
+    background: linear-gradient(#29c96f, #087b3c);
 }
 
-#updatePageBtn {
-    width: min(100%, 420px);
-    margin-top: 9px;
-    min-height: 45px;
-    flex-shrink: 0;
+#updateBtn {
+    width: min(94vw, 390px);
+    min-height: 36px;
+    margin-top: 7px;
     background: linear-gradient(#36c9ff, #1263cf);
     border-color: #8be8ff;
-    box-shadow: 0 3px #083b83;
-}
-
-button:active {
-    transform: scale(.98);
-    filter: brightness(1.2);
 }
 
 .tip {
-    width: min(100%, 420px);
-    margin-top: 8px;
+    width: min(94vw, 390px);
     text-align: center;
-    color: #b9d7ef;
-    font-size: 12px;
+    margin-top: 6px;
+    font-size: 11px;
     line-height: 1.4;
+    color: #b9d7ef;
 }
 
 @media (max-height: 650px) {
-    body { padding-top: 3px; }
-    h1 { font-size: 19px; margin: 1px 0 3px; }
-    .info { margin-bottom: 3px; font-size: 13px; }
-    #game { max-height: 43vh; }
-    .controls { margin-top: 5px; gap: 5px; }
-    button { min-height: 38px; padding: 6px; font-size: 13px; }
-    #updatePageBtn { margin-top: 5px; min-height: 38px; }
-    .tip { margin-top: 4px; }
+    body { padding-top: 2px; }
+    h1 { font-size: 18px; margin: 1px 0 3px; }
+    .info { margin-bottom: 3px; gap: 10px; }
+    #game { max-height: 43vh; max-height: 43dvh; }
+    .controls { margin-top: 4px; }
+    button { min-height: 33px; font-size: 10px; }
+    #updateBtn { min-height: 31px; margin-top: 4px; }
+    .tip { margin-top: 3px; }
 }
 </style>
 </head>
 
 <body>
 
-<header>
-    <h1>🎮 SUPER PINBALL ARCADE</h1>
-    <div class="info">
-        <div>PONTOS: <span id="score">0</span></div>
-        <div>RECORDE: <span id="record">0</span></div>
-        <div>BOLAS: <span id="balls">3</span></div>
-    </div>
-</header>
+<h1>🎮 SUPER PINBALL ARCADE</h1>
+
+<div class="info">
+    <div>PONTOS: <span id="score">0</span></div>
+    <div>RECORDE: <span id="record">0</span></div>
+    <div>BOLAS: <span id="balls">3</span></div>
+</div>
 
 <canvas id="game" width="400" height="650"></canvas>
 
 <div class="controls">
-    <button id="leftBtn" type="button">◀ FLIPER</button>
-    <button id="rightBtn" type="button">FLIPER ▶</button>
-    <button id="launchBtn" type="button">🚀 LANÇAR BOLA</button>
-    <button id="restartBtn" type="button">🔄 REINICIAR</button>
+    <button id="leftBtn" class="flipper">◀ FLIPER</button>
+    <button id="rightBtn" class="flipper">FLIPER ▶</button>
+    <button id="launchBtn">🚀 LANÇAR</button>
+    <button id="restartBtn">🔄 REINICIAR</button>
 </div>
 
-<button id="updatePageBtn" type="button">🌐 ATUALIZAR SITE</button>
+<button id="updateBtn">🌐 ATUALIZAR SITE</button>
 
 <div class="tip">
-    Toque em LANÇAR BOLA para começar.<br>
-    Segure os botões FLIPER para rebater a bola.
+    Segure os flippers para rebater a bola.<br>
+    O corredor à direita lança a bola para dentro da mesa.<br>
+    O som é ativado quando você toca nos controles.
 </div>
 
 <script>
@@ -180,8 +165,8 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const scoreText = document.getElementById("score");
-const recordText = document.getElementById("record");
 const ballsText = document.getElementById("balls");
+const recordText = document.getElementById("record");
 
 const W = 400;
 const H = 650;
@@ -191,39 +176,56 @@ let balls = 3;
 let record = 0;
 let gameOver = false;
 let ballInLauncher = true;
+let launching = false;
+let launchTimer = 0;
 let leftPressed = false;
 let rightPressed = false;
 let lastTime = 0;
-let animationId = null;
+let audio = null;
+let wallSoundTime = 0;
+let bumperSoundTime = 0;
 
 try {
     record = Number(localStorage.getItem("pinballRecord")) || 0;
-} catch (e) {
-    record = 0;
-}
+} catch (e) {}
+
 recordText.textContent = record;
 
+/*
+    A mesa tem uma área de jogo à esquerda
+    e um corredor de lançamento à direita.
+*/
+
 const ball = {
-    x: 350,
+    x: 356,
     y: 555,
     vx: 0,
     vy: 0,
-    r: 9
+    r: 8
 };
 
 const bumpers = [
-    {x: 115, y: 180, r: 30, color: "#ff3c89"},
-    {x: 250, y: 220, r: 31, color: "#25dfff"},
-    {x: 180, y: 310, r: 28, color: "#ffe24a"}
+    {x: 100, y: 145, r: 23, color: "#ff3c89", points: 100},
+    {x: 235, y: 145, r: 23, color: "#25dfff", points: 100},
+    {x: 165, y: 225, r: 25, color: "#ffe24a", points: 150},
+    {x: 80, y: 290, r: 19, color: "#9b6bff", points: 100},
+    {x: 260, y: 285, r: 19, color: "#ff7b35", points: 100},
+    {x: 165, y: 350, r: 22, color: "#39f58a", points: 150}
 ];
 
-const leftFlipper = {
-    x: 115, y: 535, length: 83, angle: 0.25
-};
+const pegs = [
+    {x: 55, y: 205},
+    {x: 300, y: 205},
+    {x: 125, y: 265},
+    {x: 215, y: 265},
+    {x: 45, y: 335},
+    {x: 295, y: 345},
+    {x: 105, y: 390},
+    {x: 235, y: 390}
+];
 
-const rightFlipper = {
-    x: 285, y: 535, length: 83, angle: Math.PI - 0.25
-};
+const leftFlipper = {x: 115, y: 535, length: 75};
+const rightFlipper = {x: 235, y: 535, length: 75};
 
 function updateText() {
     scoreText.textContent = score;
@@ -241,47 +243,103 @@ function saveRecord() {
     updateText();
 }
 
+/* Sons criados pelo próprio navegador */
+
+function initAudio() {
+    try {
+        if (!audio) {
+            const AudioContextClass =
+                window.AudioContext || window.webkitAudioContext;
+
+            if (AudioContextClass) {
+                audio = new AudioContextClass();
+            }
+        }
+
+        if (audio && audio.state === "suspended") {
+            audio.resume();
+        }
+    } catch (e) {}
+}
+
+function sound(freq = 440, duration = 0.07, type = "sine", volume = 0.07) {
+    if (!audio) return;
+
+    try {
+        const oscillator = audio.createOscillator();
+        const gain = audio.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(freq, audio.currentTime);
+
+        gain.gain.setValueAtTime(volume, audio.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audio.currentTime + duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audio.destination);
+
+        oscillator.start();
+        oscillator.stop(audio.currentTime + duration);
+    } catch (e) {}
+}
+
 function resetBall() {
-    ball.x = 350;
+    ball.x = 356;
     ball.y = 555;
     ball.vx = 0;
     ball.vy = 0;
+
     ballInLauncher = true;
+    launching = false;
+    launchTimer = 0;
 }
 
 function restartGame() {
+    initAudio();
+
     score = 0;
     balls = 3;
     gameOver = false;
     leftPressed = false;
     rightPressed = false;
+
     resetBall();
     updateText();
-    draw();
+    sound(500, 0.12, "triangle", 0.05);
 }
 
 function launchBall() {
+    initAudio();
+
     if (gameOver) {
         restartGame();
     }
 
-    if (ballInLauncher) {
-        ballInLauncher = false;
-        ball.vx = -2.2;
-        ball.vy = -10.5;
+    if (ballInLauncher && !launching) {
+        launching = true;
+        launchTimer = 0;
+        ball.vx = 0;
+        ball.vy = -18;
+        sound(170, 0.18, "sawtooth", 0.07);
     }
 }
 
 function loseBall() {
     if (gameOver) return;
 
+    sound(120, 0.2, "triangle", 0.06);
     balls--;
+
     saveRecord();
 
     if (balls <= 0) {
         balls = 0;
         gameOver = true;
         ballInLauncher = false;
+        launching = false;
     } else {
         resetBall();
     }
@@ -296,14 +354,17 @@ function addPoints(amount) {
 
 function drawCircle(x, y, r, color, glow = 0) {
     ctx.save();
+
     if (glow) {
         ctx.shadowColor = color;
         ctx.shadowBlur = glow;
     }
+
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
+
     ctx.restore();
 }
 
@@ -319,15 +380,19 @@ function drawLine(x1, y1, x2, y2, color, width) {
 
 function drawFlipper(f, isLeft, pressed) {
     const angle = isLeft
-        ? (pressed ? -0.43 : 0.25)
-        : (pressed ? Math.PI + 0.43 : Math.PI - 0.25);
+        ? (pressed ? -0.50 : 0.18)
+        : (pressed ? Math.PI + 0.50 : Math.PI - 0.18);
 
     const x2 = f.x + Math.cos(angle) * f.length;
     const y2 = f.y + Math.sin(angle) * f.length;
 
-    drawLine(f.x, f.y, x2, y2, "#08101c", 24);
-    drawLine(f.x, f.y, x2, y2, pressed ? "#fff36b" : "#ffb52e", 15);
-    drawCircle(f.x, f.y, 13, "#e9f8ff");
+    drawLine(f.x, f.y, x2, y2, "#050a15", 20);
+    drawLine(
+        f.x, f.y, x2, y2,
+        pressed ? "#fff36b" : "#ffb52e",
+        12
+    );
+    drawCircle(f.x, f.y, 10, "#e9f8ff");
 }
 
 function draw() {
@@ -336,60 +401,76 @@ function draw() {
     const bg = ctx.createLinearGradient(0, 0, W, H);
     bg.addColorStop(0, "#102b52");
     bg.addColorStop(1, "#050b19");
+
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Bordas da mesa
-    drawLine(20, 20, 20, 585, "#27dfff", 5);
-    drawLine(20, 20, 380, 20, "#27dfff", 5);
-    drawLine(380, 20, 380, 585, "#27dfff", 5);
-    drawLine(20, 585, 100, 625, "#27dfff", 5);
-    drawLine(380, 585, 300, 625, "#27dfff", 5);
-    drawLine(100, 625, 300, 625, "#27dfff", 5);
+    // Parede externa esquerda e paredes inferiores
+    drawLine(15, 18, 15, 585, "#27dfff", 5);
+    drawLine(15, 18, 382, 18, "#27dfff", 5);
+    drawLine(15, 585, 100, 630, "#27dfff", 5);
+    drawLine(382, 585, 300, 630, "#27dfff", 5);
+    drawLine(100, 630, 300, 630, "#27dfff", 5);
 
-    // Guia de lançamento
-    drawLine(340, 65, 340, 555, "#9bb8dc", 2);
-    drawLine(365, 65, 365, 555, "#9bb8dc", 2);
+    // Corredor lateral reforçado
+    drawLine(330, 55, 330, 580, "#ffcc4a", 4);
+    drawLine(382, 25, 382, 585, "#ffcc4a", 4);
 
-    // Luzes e bumpers
-    bumpers.forEach((b, i) => {
-        drawCircle(b.x, b.y, b.r + 7, "#193c61");
-        drawCircle(b.x, b.y, b.r, b.color, 15);
-        drawCircle(b.x - 7, b.y - 7, 7, "#ffffff");
+    // Abertura superior por onde a bola entra na mesa
+    drawLine(330, 55, 345, 25, "#ffcc4a", 4);
+    drawLine(345, 25, 382, 25, "#ffcc4a", 4);
+
+    ctx.fillStyle = "#ffe66d";
+    ctx.font = "bold 11px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("LANÇAMENTO", 356, 315);
+    ctx.fillText("↑", 356, 340);
+
+    // Guias luminosas
+    drawLine(40, 410, 95, 450, "#f7c64a", 8);
+    drawLine(310, 410, 255, 450, "#f7c64a", 8);
+
+    // Bumpers
+    bumpers.forEach(b => {
+        drawCircle(b.x, b.y, b.r + 5, "#193c61");
+        drawCircle(b.x, b.y, b.r, b.color, 13);
+        drawCircle(b.x - 5, b.y - 6, 5, "#ffffff");
+
         ctx.fillStyle = "#07101e";
-        ctx.font = "bold 14px Arial";
+        ctx.font = "bold 13px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("+", b.x, b.y + 6);
+        ctx.fillText("+", b.x, b.y + 5);
     });
 
-    // Obstáculos
-    drawLine(45, 390, 105, 435, "#f7c64a", 9);
-    drawLine(355, 390, 295, 435, "#f7c64a", 9);
-    drawCircle(45, 390, 8, "#ffffff");
-    drawCircle(355, 390, 8, "#ffffff");
+    // Pinos menores de contato
+    pegs.forEach(p => {
+        drawCircle(p.x, p.y, 7, "#1d526f");
+        drawCircle(p.x, p.y, 4, "#a6f7ff", 5);
+    });
 
     // Flippers
     drawFlipper(leftFlipper, true, leftPressed);
     drawFlipper(rightFlipper, false, rightPressed);
 
     // Bola
-    drawCircle(ball.x, ball.y, ball.r + 2, "#a6d8ff", 9);
+    drawCircle(ball.x, ball.y, ball.r + 2, "#a6d8ff", 8);
     drawCircle(ball.x - 2, ball.y - 2, ball.r - 2, "#ffffff");
 
-    // Mensagem de estado
-    ctx.textAlign = "center";
+    // Mensagens
     if (gameOver) {
         ctx.fillStyle = "#ff5577";
-        ctx.font = "bold 31px Arial";
-        ctx.fillText("FIM DE JOGO", 200, 295);
+        ctx.font = "bold 29px Arial";
+        ctx.fillText("FIM DE JOGO", 170, 300);
+
         ctx.fillStyle = "#ffffff";
-        ctx.font = "18px Arial";
-        ctx.fillText("Toque em REINICIAR", 200, 330);
-    } else if (ballInLauncher) {
+        ctx.font = "15px Arial";
+        ctx.fillText("Toque em REINICIAR", 170, 330);
+    } else if (ballInLauncher && !launching) {
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 15px Arial";
-        ctx.fillText("TOQUE EM LANÇAR BOLA", 205, 490);
-        ctx.fillText("PARA COMEÇAR!", 205, 513);
+        ctx.font = "bold 12px Arial";
+        ctx.fillText("TOQUE EM", 356, 485);
+        ctx.fillText("LANÇAR", 356, 502);
+        ctx.fillText("PARA JOGAR", 356, 519);
     }
 
     ctx.textAlign = "start";
@@ -409,33 +490,58 @@ function hitBumper(b) {
         ball.y = b.y + ny * (minDistance + 1);
 
         const speed = ball.vx * nx + ball.vy * ny;
+
         if (speed < 0) {
             ball.vx -= 2 * speed * nx;
             ball.vy -= 2 * speed * ny;
         }
 
-        ball.vx += nx * 2.5;
-        ball.vy += ny * 2.5;
+        // Impulso extra do bumper
+        ball.vx += nx * 3.0;
+        ball.vy += ny * 3.0;
 
         limitSpeed();
-        addPoints(100);
+        addPoints(b.points);
+
+        sound(620 + Math.random() * 350, 0.09, "sine", 0.08);
     }
 }
 
-function limitSpeed() {
-    const maxSpeed = 13;
-    const speed = Math.hypot(ball.vx, ball.vy);
+function hitPegs() {
+    for (const p of pegs) {
+        const dx = ball.x - p.x;
+        const dy = ball.y - p.y;
+        const distance = Math.hypot(dx, dy);
+        const minDistance = ball.r + 5;
 
-    if (speed > maxSpeed) {
-        ball.vx = ball.vx / speed * maxSpeed;
-        ball.vy = ball.vy / speed * maxSpeed;
+        if (distance < minDistance && distance > 0) {
+            const nx = dx / distance;
+            const ny = dy / distance;
+
+            ball.x = p.x + nx * (minDistance + 1);
+            ball.y = p.y + ny * (minDistance + 1);
+
+            const dot = ball.vx * nx + ball.vy * ny;
+
+            if (dot < 0) {
+                ball.vx -= 1.8 * dot * nx;
+                ball.vy -= 1.8 * dot * ny;
+            }
+
+            ball.vx += nx * 0.8;
+            ball.vy += ny * 0.8;
+
+            limitSpeed();
+            addPoints(10);
+            sound(850, 0.035, "square", 0.025);
+        }
     }
 }
 
 function hitFlipper(f, isLeft, pressed) {
     const angle = isLeft
-        ? (pressed ? -0.43 : 0.25)
-        : (pressed ? Math.PI + 0.43 : Math.PI - 0.25);
+        ? (pressed ? -0.50 : 0.18)
+        : (pressed ? Math.PI + 0.50 : Math.PI - 0.18);
 
     const x2 = f.x + Math.cos(angle) * f.length;
     const y2 = f.y + Math.sin(angle) * f.length;
@@ -444,7 +550,11 @@ function hitFlipper(f, isLeft, pressed) {
     const dy = y2 - f.y;
     const lengthSq = dx * dx + dy * dy;
 
-    let t = ((ball.x - f.x) * dx + (ball.y - f.y) * dy) / lengthSq;
+    let t = (
+        (ball.x - f.x) * dx +
+        (ball.y - f.y) * dy
+    ) / lengthSq;
+
     t = Math.max(0, Math.min(1, t));
 
     const px = f.x + t * dx;
@@ -461,11 +571,13 @@ function hitFlipper(f, isLeft, pressed) {
         ball.y = py + ny * (ball.r + 9);
 
         if (pressed) {
-            ball.vy = -10.5;
-            ball.vx += isLeft ? 2.4 : -2.4;
+            ball.vy = -12.5;
+            ball.vx += isLeft ? 3.5 : -3.5;
+            sound(300, 0.08, "triangle", 0.07);
         } else {
             ball.vx += nx * 2;
             ball.vy += ny * 2;
+            sound(220, 0.04, "triangle", 0.035);
         }
 
         limitSpeed();
@@ -473,56 +585,106 @@ function hitFlipper(f, isLeft, pressed) {
     }
 }
 
+function limitSpeed() {
+    const maxSpeed = 16;
+    const speed = Math.hypot(ball.vx, ball.vy);
+
+    if (speed > maxSpeed) {
+        ball.vx = ball.vx / speed * maxSpeed;
+        ball.vy = ball.vy / speed * maxSpeed;
+    }
+}
+
 function update(dt) {
-    if (gameOver || ballInLauncher) return;
+    if (gameOver) return;
 
-    const step = Math.min(dt, 2.2);
+    const step = Math.min(dt, 2);
 
-    // Gravidade moderada
-    ball.vy += 0.20 * step;
+    // Lançamento pelo corredor lateral.
+    // A bola sobe primeiro e depois entra pela abertura superior.
+    if (launching) {
+        launchTimer += step;
+
+        ball.x = 356;
+        ball.y -= 16 * step;
+
+        if (ball.y <= 48) {
+            launching = false;
+            ballInLauncher = false;
+
+            ball.x = 320;
+            ball.y = 58;
+            ball.vx = -5.8;
+            ball.vy = 2.8;
+
+            sound(950, 0.12, "triangle", 0.07);
+        }
+
+        return;
+    }
+
+    if (ballInLauncher) return;
+
+    // Gravidade
+    ball.vy += 0.19 * step;
     ball.x += ball.vx * step;
     ball.y += ball.vy * step;
 
-    // Paredes
-    if (ball.x - ball.r < 24) {
-        ball.x = 24 + ball.r;
-        ball.vx = Math.abs(ball.vx) * 0.82;
+    // Paredes externas da área de jogo.
+    // A lateral direita fica fechada abaixo da entrada do corredor.
+    if (ball.x - ball.r < 20) {
+        ball.x = 20 + ball.r;
+        ball.vx = Math.abs(ball.vx) * 0.88;
+        wallSound();
     }
 
-    if (ball.x + ball.r > 376) {
-        ball.x = 376 - ball.r;
-        ball.vx = -Math.abs(ball.vx) * 0.82;
+    if (ball.x + ball.r > 325) {
+        ball.x = 325 - ball.r;
+        ball.vx = -Math.abs(ball.vx) * 0.88;
+        wallSound();
     }
 
     if (ball.y - ball.r < 25) {
         ball.y = 25 + ball.r;
-        ball.vy = Math.abs(ball.vy) * 0.8;
+        ball.vy = Math.abs(ball.vy) * 0.85;
+        wallSound();
     }
 
-    // Obstáculos inclinados
-    if (ball.y > 380 && ball.y < 450) {
-        if (ball.x < 105 && ball.x > 40) {
+    // Guias inclinadas
+    if (ball.y > 405 && ball.y < 455) {
+        if (ball.x < 95 && ball.x > 35) {
             ball.vx = Math.abs(ball.vx) + 1;
             ball.vy = -Math.abs(ball.vy) * 0.8;
+            wallSound();
         }
 
-        if (ball.x > 295 && ball.x < 360) {
+        if (ball.x > 260 && ball.x < 320) {
             ball.vx = -Math.abs(ball.vx) - 1;
             ball.vy = -Math.abs(ball.vy) * 0.8;
+            wallSound();
         }
     }
 
     bumpers.forEach(hitBumper);
+    hitPegs();
 
     hitFlipper(leftFlipper, true, leftPressed);
     hitFlipper(rightFlipper, false, rightPressed);
 
-    // Evita velocidade excessiva
     limitSpeed();
 
-    // Bola perdida
-    if (ball.y > H + 20) {
+    // A bola só é perdida se cair pelo espaço entre os flippers.
+    if (ball.y > 645) {
         loseBall();
+    }
+}
+
+function wallSound() {
+    const now = performance.now();
+
+    if (now - wallSoundTime > 70) {
+        wallSoundTime = now;
+        sound(180, 0.045, "square", 0.035);
     }
 }
 
@@ -535,45 +697,48 @@ function loop(time) {
     update(dt);
     draw();
 
-    animationId = requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
 }
 
-function setButtonHold(id, side) {
+function setupHoldButton(id, side) {
     const btn = document.getElementById(id);
 
-    const down = (e) => {
+    function down(e) {
         e.preventDefault();
+        initAudio();
+
         if (side === "left") leftPressed = true;
         if (side === "right") rightPressed = true;
-    };
+    }
 
-    const up = (e) => {
+    function up(e) {
         e.preventDefault();
+
         if (side === "left") leftPressed = false;
         if (side === "right") rightPressed = false;
-    };
+    }
 
     btn.addEventListener("pointerdown", down);
     btn.addEventListener("pointerup", up);
     btn.addEventListener("pointercancel", up);
     btn.addEventListener("pointerleave", up);
+    btn.addEventListener("contextmenu", e => e.preventDefault());
 }
 
-setButtonHold("leftBtn", "left");
-setButtonHold("rightBtn", "right");
+setupHoldButton("leftBtn", "left");
+setupHoldButton("rightBtn", "right");
 
 document.getElementById("launchBtn").addEventListener("click", launchBall);
 document.getElementById("restartBtn").addEventListener("click", restartGame);
 
-// Atualiza a página atual, sem sair do site
-document.getElementById("updatePageBtn").addEventListener("click", () => {
+document.getElementById("updateBtn").addEventListener("click", () => {
     const url = new URL(window.location.href);
     url.searchParams.set("atualizar", Date.now().toString());
     window.location.replace(url.toString());
 });
 
-// Teclado para jogar no computador
-document.addEventListener("keydown", (e) => {
+// Controles de teclado para computador
+document.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
         leftPressed = true;
         e.preventDefault();
@@ -590,7 +755,7 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-document.addEventListener("keyup", (e) => {
+document.addEventListener("keyup", e => {
     if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
         leftPressed = false;
     }
@@ -600,18 +765,10 @@ document.addEventListener("keyup", (e) => {
     }
 });
 
-// Evita que o navegador fique com a página ampliada por gestos
-document.addEventListener("gesturestart", e => e.preventDefault());
-
 updateText();
 resetBall();
 draw();
-
-if (animationId !== null) {
-    cancelAnimationFrame(animationId);
-}
-lastTime = 0;
-animationId = requestAnimationFrame(loop);
+requestAnimationFrame(loop);
 </script>
 
 </body>
