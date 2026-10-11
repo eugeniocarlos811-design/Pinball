@@ -120,6 +120,16 @@
       font-size: 12px;
       border-radius: 12px;
     }
+    .btn-update {
+      background: linear-gradient(180deg, #cc66ff 100%, #9900ff 0%);
+      border: 2px solid #fff;
+      color: #fff;
+      grid-column: span 3;
+      margin-top: 4px;
+      padding: 8px;
+      font-size: 12px;
+      border-radius: 12px;
+    }
 
     .instructions {
       font-size: 10px;
@@ -148,6 +158,7 @@
       <button class="btn btn-launch" id="btn-launch">LANÇAR</button>
       <button class="btn btn-yellow" id="btn-right">DIR. ►</button>
       <button class="btn btn-reset" id="btn-reset">🔄 REINICIAR JOGO</button>
+      <button class="btn btn-update" id="btn-update">⟳ ATUALIZAR JOGO</button>
     </div>
 
     <div class="instructions">
@@ -168,13 +179,12 @@
     const highscoreEl = document.getElementById('highscore');
     const ballsEl = document.getElementById('balls');
 
-    // Configuração da Mola (Corredor Lateral Direito x = 350)
+    // Configuração da Mola (Corredor Direito x = 350)
     const launcher = {
       x: 350,
-      baseY: 500,     // Onde a mola fica presa embaixo
-      pull: 0,        // Quanto foi puxada para baixo
-      maxPull: 70,    // Força máxima aumentada
-      isCharging: false
+      baseY: 500,
+      pull: 0,
+      maxPull: 70
     };
 
     // Bola
@@ -190,10 +200,10 @@
 
     // Flippers
     const flipperLeft = {
-      x: 110, y: 465, length: 65, angle: 0.35, targetAngle: 0.35, restAngle: 0.35, upAngle: -0.35, speed: 0.3
+      x: 115, y: 465, length: 65, angle: 0.35, targetAngle: 0.35, restAngle: 0.35, upAngle: -0.35, speed: 0.3
     };
     const flipperRight = {
-      x: 230, y: 465, length: 65, angle: Math.PI - 0.35, targetAngle: Math.PI - 0.35, restAngle: Math.PI - 0.35, upAngle: Math.PI + 0.35, speed: 0.3
+      x: 225, y: 465, length: 65, angle: Math.PI - 0.35, targetAngle: Math.PI - 0.35, restAngle: Math.PI - 0.35, upAngle: Math.PI + 0.35, speed: 0.3
     };
 
     // Bumpers
@@ -246,6 +256,7 @@
     // Controles Touch / Mouse
     function setupButton(id, onStart, onEnd) {
       const btn = document.getElementById(id);
+      if(!btn) return;
       const start = (e) => { e.preventDefault(); onStart(); };
       const end = (e) => { e.preventDefault(); onEnd(); };
 
@@ -263,11 +274,13 @@
     });
 
     document.getElementById('btn-reset').addEventListener('click', resetGame);
+    document.getElementById('btn-update').addEventListener('click', () => {
+      window.location.reload();
+    });
 
     function releaseLauncher() {
       if (ball.inChute && launcher.pull > 5) {
-        // Força forte o suficiente para subir todo o corredor e entrar no campo
-        ball.vy = -Math.min(launcher.pull * 0.32, 26);
+        ball.vy = -Math.min(launcher.pull * 0.35, 27);
         ball.vx = 0;
         ball.inChute = false;
       }
@@ -317,42 +330,56 @@
         ball.y += ball.vy;
 
         // Atrito
-        ball.vx *= 0.992;
-        ball.vy *= 0.992;
+        ball.vx *= 0.993;
+        ball.vy *= 0.993;
       } else {
-        // Bola presa na ponta superior da mola
         ball.y = 480 - launcher.pull;
       }
 
-      // 4. Paredes do Campo
+      // 4. Colisões com as Paredes do Tabuleiro
       // Parede Esquerda
-      if (ball.x - ball.radius < 15) { ball.x = 15 + ball.radius; ball.vx *= -0.7; }
-      
+      if (ball.x - ball.radius < 20) {
+        ball.x = 20 + ball.radius;
+        ball.vx *= -0.75;
+      }
+
+      // Teto Superior Curvado
+      if (ball.y - ball.radius < 20) {
+        ball.y = 20 + ball.radius;
+        ball.vy *= -0.75;
+      }
+
       // Canaleta Direita (Separador em x = 325)
-      if (ball.x > 325 && ball.y > 60 && ball.y < 510) {
-        if (ball.inChute) {
-          ball.x = 350; // Mantém no canal
-        } else {
-          // Se a bola vier do campo e cair no canal da direita, guia ela para baixo suavemente
-          if (ball.x > 325 && ball.y < 420 && ball.vy > 0) {
+      if (ball.inChute) {
+        ball.x = 350;
+      } else {
+        // Se estiver subindo pelo canal de lançamento
+        if (ball.x > 325 && ball.y < 480 && ball.y > 60) {
+          if (ball.y < 60) {
+            // Saída do topo do canal para o campo principal
+            ball.vx = -6;
+          } else {
             ball.x = 350;
-          } else if (ball.x > 365) {
-            ball.x = 365 - ball.radius;
-            ball.vx *= -0.7;
+            if (ball.x + ball.radius > 365) {
+              ball.x = 365 - ball.radius;
+              ball.vx *= -0.75;
+            }
           }
+        } else if (!ball.inChute && ball.x > 325 && ball.y <= 65) {
+          // Força a entrada para o campo principal à esquerda ao sair do corredor
+          ball.vx = -6;
+        } else if (ball.x + ball.radius > 360 && ball.y > 60) {
+          // Parede lateral direita externa
+          ball.x = 360 - ball.radius;
+          ball.vx *= -0.75;
         }
       }
 
-      // Topo do campo e curvatura de lançamento
-      if (ball.y - ball.radius < 15) { 
-        ball.y = 15 + ball.radius; 
-        ball.vy *= -0.7; 
-      }
-
-      // Se a bola passou do topo do canal direito para dentro do campo principal
-      if (!ball.inChute && ball.x > 310 && ball.y < 65) {
-        ball.vx = -4 - Math.random() * 3; // Joga a bola para o campo principal à esquerda
-      }
+      // Guias diagonais inferiores (direcionam para os flippers)
+      // Guia inferior esquerda: de (20, 380) até (110, 465)
+      checkLineCollision(20, 380, 110, 465);
+      // Guia inferior direita: de (360, 380) até (270, 465)
+      checkLineCollision(360, 380, 270, 465);
 
       // 5. Bumpers
       bumpers.forEach(b => {
@@ -405,6 +432,29 @@
       }
     }
 
+    // Função auxiliar para colisão com paredes diagonais
+    function checkLineCollision(x1, y1, x2, y2) {
+      let dx = x2 - x1;
+      let dy = y2 - y1;
+      let len = Math.hypot(dx, dy);
+      let u = ((ball.x - x1) * dx + (ball.y - y1) * dy) / (len * len);
+
+      if (u >= 0 && u <= 1) {
+        let px = x1 + u * dx;
+        let py = y1 + u * dy;
+        let dist = Math.hypot(ball.x - px, ball.y - py);
+
+        if (dist < ball.radius + 4) {
+          let angle = Math.atan2(dy, dx) + Math.PI / 2;
+          ball.vx = Math.cos(angle) * 6;
+          ball.vy = Math.sin(angle) * 6;
+          // Afasta a bola da linha para não grudar
+          ball.x = px + Math.cos(angle) * (ball.radius + 5);
+          ball.y = py + Math.sin(angle) * (ball.radius + 5);
+        }
+      }
+    }
+
     function checkFlipperCollision(f, isLeft) {
       let fx2 = f.x + Math.cos(f.angle) * f.length;
       let fy2 = f.y + Math.sin(f.angle) * f.length;
@@ -420,7 +470,7 @@
 
         if (dist < ball.radius + 6) {
           let angle = Math.atan2(ball.y - py, ball.x - px);
-          let impulse = (f.targetAngle !== f.restAngle) ? 15 : 7;
+          let impulse = (f.targetAngle !== f.restAngle) ? 16 : 8;
           ball.vx = Math.cos(angle) * impulse;
           ball.vy = Math.sin(angle) * impulse - 3;
         }
@@ -447,15 +497,15 @@
       ctx.beginPath();
       ctx.moveTo(325, 50);
       ctx.quadraticCurveTo(325, 15, 180, 15);
-      ctx.quadraticCurveTo(15, 15, 15, 120);
+      ctx.quadraticCurveTo(20, 15, 20, 120);
       ctx.strokeStyle = '#00d8ff';
       ctx.lineWidth = 4;
       ctx.stroke();
 
       // Guias diagonais inferiores
       ctx.beginPath();
-      ctx.moveTo(15, 380); ctx.lineTo(110, 465);
-      ctx.moveTo(325, 380); ctx.lineTo(230, 465);
+      ctx.moveTo(20, 380); ctx.lineTo(115, 465);
+      ctx.moveTo(360, 380); ctx.lineTo(265, 465);
       ctx.strokeStyle = '#0077ff';
       ctx.lineWidth = 5;
       ctx.stroke();
@@ -541,10 +591,9 @@
       ctx.restore();
     }
 
-    // Desenho da Mola Sanfonada Animada
     function drawSpring() {
-      let bottomY = launcher.baseY; // Onde a base da mola fica (500)
-      let topY = 480 - launcher.pull; // Topo da mola onde a bola se apoia
+      let bottomY = launcher.baseY;
+      let topY = 480 - launcher.pull;
       let coils = 7;
       let step = (bottomY - topY) / coils;
 
@@ -565,7 +614,6 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // Base de apoio da mola (pistão)
       ctx.fillStyle = '#ff0055';
       ctx.fillRect(launcher.x - 12, bottomY, 24, 6);
     }
