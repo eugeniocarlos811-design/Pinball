@@ -1,11 +1,10 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<title>Super Pinball Arcade V7</title>
+<title>Super Pinball Arcade V8</title>
 
 <style>
 * {
@@ -19,7 +18,6 @@ body {
     color: white;
     font-family: Arial, sans-serif;
     text-align: center;
-    min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
     padding: 4px;
@@ -201,6 +199,13 @@ const BALL_RADIUS = 7;
 const MAX_SPEED = 12;
 const GRAVITY = 0.13;
 
+// Corredor de lançamento.
+// A barra fica à esquerda do corredor e tem
+// uma abertura superior para a bola entrar no tabuleiro.
+const CORRIDOR_X = 320;
+const CORRIDOR_WALL_TOP = 480;
+const CORRIDOR_WALL_BOTTOM = 610;
+
 let score = 0;
 let balls = 3;
 let record = 0;
@@ -213,7 +218,7 @@ let lastTime = 0;
 let audioContext = null;
 
 try {
-    record = Number(localStorage.getItem("pinballRecordV7")) || 0;
+    record = Number(localStorage.getItem("pinballRecordV8")) || 0;
 } catch (error) {
     record = 0;
 }
@@ -262,13 +267,12 @@ const pins = [
     { x: 65, y: 215, r: 6 },
     { x: 155, y: 210, r: 6 },
     { x: 235, y: 245, r: 6 },
-    { x: 335, y: 265, r: 6 },
+    { x: 305, y: 265, r: 6 },
     { x: 155, y: 330, r: 6 },
     { x: 225, y: 345, r: 6 },
     { x: 255, y: 420, r: 6 },
     { x: 125, y: 430, r: 6 },
-    { x: 190, y: 455, r: 6 },
-    { x: 310, y: 465, r: 6 }
+    { x: 190, y: 455, r: 6 }
 ];
 
 function getFlipperSegment(flipper, pressed) {
@@ -303,7 +307,7 @@ function addScore(points) {
         recordText.textContent = record;
 
         try {
-            localStorage.setItem("pinballRecordV7", String(record));
+            localStorage.setItem("pinballRecordV8", String(record));
         } catch (error) {}
     }
 }
@@ -365,11 +369,11 @@ function launchBall() {
     launchReady = false;
     ballInPlay = true;
 
-    // Bola começa dentro do corredor, acima da saída aberta.
+    // Bola começa no corredor.
     ball.x = 355;
     ball.y = 585;
 
-    // Lançamento forte para cima e em direção ao tabuleiro.
+    // Sobe rapidamente e segue para a abertura superior.
     ball.vx = -2.5;
     ball.vy = -11.5;
 
@@ -418,11 +422,11 @@ function circleCollision(object, points = 10) {
     ball.x = object.x + nx * (minDistance + 0.5);
     ball.y = object.y + ny * (minDistance + 0.5);
 
-    const velocityAlongNormal = ball.vx * nx + ball.vy * ny;
+    const vn = ball.vx * nx + ball.vy * ny;
 
-    if (velocityAlongNormal < 0) {
-        ball.vx -= 1.8 * velocityAlongNormal * nx;
-        ball.vy -= 1.8 * velocityAlongNormal * ny;
+    if (vn < 0) {
+        ball.vx -= 1.8 * vn * nx;
+        ball.vy -= 1.8 * vn * ny;
     }
 
     ball.vx += nx * 0.7;
@@ -516,16 +520,15 @@ function collideWithFlipper(flipper, pressed, isLeft, now) {
     ball.x = nearestX + nx * (minDistance + 0.5);
     ball.y = nearestY + ny * (minDistance + 0.5);
 
-    const velocityAlongNormal = ball.vx * nx + ball.vy * ny;
+    const vn = ball.vx * nx + ball.vy * ny;
 
-    if (velocityAlongNormal < 0) {
-        ball.vx -= 1.8 * velocityAlongNormal * nx;
-        ball.vy -= 1.8 * velocityAlongNormal * ny;
+    if (vn < 0) {
+        ball.vx -= 1.8 * vn * nx;
+        ball.vy -= 1.8 * vn * ny;
     }
 
     if (pressed && now - flipper.lastHit > 100) {
         ball.vy = Math.min(ball.vy, -10.5);
-
         ball.vx += isLeft ? 2.2 : -2.2;
 
         flipper.lastHit = now;
@@ -549,7 +552,7 @@ function updatePhysics(dt) {
         ball.x += ball.vx * step;
         ball.y += ball.vy * step;
 
-        // Paredes laterais do tabuleiro.
+        // Paredes externas.
         if (ball.x - ball.r < 12) {
             ball.x = 12 + ball.r;
             ball.vx = Math.abs(ball.vx) * 0.85;
@@ -560,21 +563,28 @@ function updatePhysics(dt) {
             ball.vx = -Math.abs(ball.vx) * 0.85;
         }
 
-        // Parede superior.
         if (ball.y - ball.r < 12) {
             ball.y = 12 + ball.r;
             ball.vy = Math.abs(ball.vy) * 0.85;
         }
 
-        // Trilhos diagonais.
+        // Trilhos inferiores diagonais.
         collideWithLine(22, 480, 88, 540, 5);
         collideWithLine(378, 480, 312, 540, 5);
 
         /*
-          IMPORTANTE:
-          Não existe colisão vertical no corredor de lançamento.
-          A barreira antiga foi removida da física.
+          BARREIRA DO CORREDOR:
+          Existe somente entre Y=480 e Y=610.
+          A abertura acima de Y=480 permite que a bola
+          atravesse para o tabuleiro.
         */
+        collideWithLine(
+            CORRIDOR_X,
+            CORRIDOR_WALL_TOP,
+            CORRIDOR_X,
+            CORRIDOR_WALL_BOTTOM,
+            3
+        );
 
         for (const pin of pins) {
             circleCollision(pin, 5);
@@ -642,7 +652,7 @@ function drawBoard() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // Contorno superior e parede direita.
+    // Contorno superior e parede direita externa.
     ctx.strokeStyle = "#3ee8ff";
     ctx.lineWidth = 3;
 
@@ -652,7 +662,7 @@ function drawBoard() {
     ctx.lineTo(388, 620);
     ctx.stroke();
 
-    // Parede esquerda e trilho inferior esquerdo.
+    // Parede esquerda.
     ctx.beginPath();
     ctx.moveTo(12, 12);
     ctx.lineTo(12, 480);
@@ -660,10 +670,18 @@ function drawBoard() {
     ctx.stroke();
 
     /*
-      O corredor fica livre:
-      não desenhamos a antiga barra vertical laranja
-      nem a barreira horizontal inferior.
+      CORREDOR VISÍVEL:
+      A barra lilás antiga foi substituída por esta
+      barreira mais à esquerda, começando em Y=480.
+      A abertura superior fica livre para a bola entrar.
     */
+    ctx.strokeStyle = "#b98cff";
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.moveTo(CORRIDOR_X, CORRIDOR_WALL_TOP);
+    ctx.lineTo(CORRIDOR_X, CORRIDOR_WALL_BOTTOM);
+    ctx.stroke();
 
     // Trilhos diagonais.
     ctx.strokeStyle = "#6578c9";
@@ -672,9 +690,12 @@ function drawBoard() {
     ctx.beginPath();
     ctx.moveTo(22, 480);
     ctx.lineTo(88, 540);
+    ctx.stroke();
 
+    // O trilho direito termina antes do corredor.
+    ctx.beginPath();
     ctx.moveTo(378, 480);
-    ctx.lineTo(312, 540);
+    ctx.lineTo(340, 515);
     ctx.stroke();
 
     // Pinos.
@@ -844,4 +865,3 @@ requestAnimationFrame(gameLoop);
 
 </body>
 </html>
-```
