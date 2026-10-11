@@ -5,6 +5,10 @@ html
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>Super Pinball Arcade</title>
 
 <style>
@@ -105,6 +109,14 @@ button {
     box-shadow: 0 4px #813700;
 }
 
+#updatePageBtn {
+    width: 100%;
+    margin-top: 12px;
+    background: linear-gradient(#3985ff, #1745ad);
+    box-shadow: 0 4px #102c70;
+    border: 1px solid #7caaff;
+}
+
 button:active {
     transform: translateY(2px);
 }
@@ -171,6 +183,8 @@ button:active {
         <button id="restartBtn">🔄 REINICIAR</button>
     </div>
 
+    <button id="updatePageBtn">🌐 ATUALIZAR JOGO</button>
+
     <div class="controls">
         <button id="leftBtn" class="flipper-btn">◀ ESQUERDA</button>
         <button id="rightBtn" class="flipper-btn">DIREITA ▶</button>
@@ -179,7 +193,8 @@ button:active {
     <div class="instructions">
         Use os botões para controlar as palhetas.<br>
         No computador, use as setas ← → ou as teclas A e D.<br>
-        Se a bola cair, pressione REINICIAR e depois LANÇAR.
+        Se a bola cair, pressione REINICIAR e depois LANÇAR.<br>
+        Use ATUALIZAR JOGO para recarregar a página.
     </div>
 
 </div>
@@ -188,7 +203,7 @@ button:active {
 "use strict";
 
 // ========================================
-// CONFIGURAÇÕES DO JOGO
+// CONFIGURAÇÕES
 // ========================================
 
 const canvas = document.getElementById("gameCanvas");
@@ -203,15 +218,12 @@ const statusElement = document.getElementById("status");
 
 const launchBtn = document.getElementById("launchBtn");
 const restartBtn = document.getElementById("restartBtn");
+const updatePageBtn = document.getElementById("updatePageBtn");
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 
-// Gravidade menor para a bola não ficar muito rápida.
 const grav = 0.20;
-
-// Limite de velocidade da bola.
 const maxSpeed = 13;
-
 const ballRadius = 8;
 
 // ========================================
@@ -237,7 +249,6 @@ let vy = 0;
 let leftPressed = false;
 let rightPressed = false;
 
-let animationStarted = false;
 let lastTime = 0;
 
 let ball = {
@@ -274,11 +285,14 @@ function updateStatus(text) {
     }
 
     if (gameOver) {
-        statusElement.textContent = "Fim de jogo! Reinicie para jogar novamente.";
+        statusElement.textContent =
+            "Fim de jogo! Reinicie para jogar novamente.";
     } else if (!launched) {
-        statusElement.textContent = "Pressione LANÇAR para começar!";
+        statusElement.textContent =
+            "Pressione LANÇAR para começar!";
     } else {
-        statusElement.textContent = "Boa sorte! Não deixe a bola cair!";
+        statusElement.textContent =
+            "Boa sorte! Não deixe a bola cair!";
     }
 }
 
@@ -309,9 +323,6 @@ function prepareBall() {
 function reset() {
     score = 0;
 
-    // IMPORTANTE:
-    // O jogo volta a ficar ativo.
-    // A bola fica pronta para um novo lançamento.
     active = true;
     gameOver = false;
     launched = false;
@@ -328,32 +339,23 @@ function reset() {
 // ========================================
 
 function start() {
-
-    // Se o jogo acabou, prepara uma nova partida.
     if (gameOver || !active) {
         reset();
     }
 
-    // Evita lançar a mesma bola duas vezes.
     if (launched) {
         return;
     }
 
-    // Garante que o jogo esteja ativo.
     active = true;
     gameOver = false;
 
-    // Posição inicial da bola.
     ball.x = W - 25;
     ball.y = H - 45;
 
-    // Velocidade horizontal inicial.
     vx = -0.4;
 
-    // Lançamento vertical moderado.
     vy = -Math.sqrt(2 * grav * (H - 50)) - 1.5;
-
-    // Limita a velocidade.
     vy = Math.max(-maxSpeed, vy);
 
     launched = true;
@@ -374,7 +376,7 @@ function addScore(points) {
         try {
             localStorage.setItem("pinballRecord", record);
         } catch (e) {
-            // O jogo continua funcionando mesmo sem armazenamento.
+            // O jogo continua mesmo sem armazenamento local.
         }
     }
 
@@ -430,13 +432,11 @@ function collideCircle(obj, index) {
     const nx = dx / distance;
     const ny = dy / distance;
 
-    // Afasta a bola para evitar ficar presa dentro do objeto.
     const overlap = minDistance - distance;
 
     ball.x += nx * overlap;
     ball.y += ny * overlap;
 
-    // Reflete a velocidade em relação à superfície.
     const dot = vx * nx + vy * ny;
 
     if (dot < 0) {
@@ -444,11 +444,9 @@ function collideCircle(obj, index) {
         vy -= 2 * dot * ny;
     }
 
-    // Impulso moderado.
     vx += nx * 1.5;
     vy += ny * 1.5;
 
-    // Evita somar pontos repetidamente enquanto há contato.
     if (bumpCooldown[index] <= 0) {
         addScore(obj.points);
         createParticles(obj.x, obj.y, obj.color);
@@ -472,26 +470,21 @@ function limitSpeed() {
 // ========================================
 
 function collideWalls() {
-
-    // Parede esquerda.
     if (ball.x - ball.r < 12) {
         ball.x = 12 + ball.r;
         vx = Math.abs(vx) * 0.82;
     }
 
-    // Parede direita.
     if (ball.x + ball.r > W - 12) {
         ball.x = W - 12 - ball.r;
         vx = -Math.abs(vx) * 0.82;
     }
 
-    // Parede superior.
     if (ball.y - ball.r < 12) {
         ball.y = 12 + ball.r;
         vy = Math.abs(vy) * 0.82;
     }
 
-    // Parte superior do canal de lançamento.
     if (ball.x > W - 47 && ball.y > H - 125) {
         if (ball.x - ball.r < W - 48) {
             ball.x = W - 48 + ball.r;
@@ -501,7 +494,7 @@ function collideWalls() {
 }
 
 // ========================================
-// PALETAS DO PINBALL
+// PALETAS
 // ========================================
 
 function drawFlipper(x1, y1, x2, y2, pressed) {
@@ -509,9 +502,7 @@ function drawFlipper(x1, y1, x2, y2, pressed) {
 
     ctx.lineCap = "round";
     ctx.lineWidth = 15;
-
     ctx.strokeStyle = pressed ? "#fff07a" : "#ff4f91";
-
     ctx.shadowColor = pressed ? "#fff07a" : "#ff1680";
     ctx.shadowBlur = 14;
 
@@ -533,7 +524,11 @@ function flipperCollision(x1, y1, x2, y2, pressed, direction) {
         return;
     }
 
-    let t = ((ball.x - x1) * dx + (ball.y - y1) * dy) / lengthSquared;
+    let t = (
+        (ball.x - x1) * dx +
+        (ball.y - y1) * dy
+    ) / lengthSquared;
+
     t = Math.max(0, Math.min(1, t));
 
     const closestX = x1 + t * dx;
@@ -555,7 +550,6 @@ function flipperCollision(x1, y1, x2, y2, pressed, direction) {
     ball.x = closestX + nx * minDistance;
     ball.y = closestY + ny * minDistance;
 
-    // Impulso para devolver a bola para cima.
     if (pressed) {
         vx += direction * 2.0;
         vy = -Math.max(7, Math.abs(vy) * 0.65 + 5.5);
@@ -568,7 +562,6 @@ function flipperCollision(x1, y1, x2, y2, pressed, direction) {
             vy -= 1.7 * dot * ny;
         }
 
-        // Evita que a bola fique parada sobre a paleta.
         if (vy > -1) {
             vy = -2.5;
         }
@@ -578,31 +571,27 @@ function flipperCollision(x1, y1, x2, y2, pressed, direction) {
 }
 
 function updateFlippers() {
-    const left = leftPressed;
-    const right = rightPressed;
-
-    // Posição das paletas.
     const leftBase = { x: 125, y: 570 };
     const rightBase = { x: 295, y: 570 };
 
-    const leftTip = left
+    const leftTip = leftPressed
         ? { x: 205, y: 545 }
         : { x: 200, y: 568 };
 
-    const rightTip = right
+    const rightTip = rightPressed
         ? { x: 215, y: 545 }
         : { x: 220, y: 568 };
 
     flipperCollision(
         leftBase.x, leftBase.y,
         leftTip.x, leftTip.y,
-        left, -1
+        leftPressed, -1
     );
 
     flipperCollision(
         rightBase.x, rightBase.y,
         rightTip.x, rightTip.y,
-        right, 1
+        rightPressed, 1
     );
 }
 
@@ -615,21 +604,17 @@ function updateBall() {
         return;
     }
 
-    // Gravidade.
     vy += grav;
 
     limitSpeed();
 
-    // Movimento.
     ball.x += vx;
     ball.y += vy;
 
-    // Atrito leve.
     vx *= 0.999;
 
     collideWalls();
 
-    // Colisão com os bumpers.
     for (let i = 0; i < bumpers.length; i++) {
         if (bumpCooldown[i] > 0) {
             bumpCooldown[i]--;
@@ -638,14 +623,11 @@ function updateBall() {
         collideCircle(bumpers[i], i);
     }
 
-    // Colisão com as paletas.
     updateFlippers();
 
-    // Pequenos obstáculos triangulares.
     collideTriangle(70, 390, 125, 430);
     collideTriangle(350, 390, 295, 430);
 
-    // A bola caiu.
     if (ball.y - ball.r > H) {
         endGame();
     }
@@ -661,7 +643,11 @@ function collideTriangle(x1, y1, x2, y2) {
 
     const lengthSquared = dx * dx + dy * dy;
 
-    let t = ((ball.x - x1) * dx + (ball.y - y1) * dy) / lengthSquared;
+    let t = (
+        (ball.x - x1) * dx +
+        (ball.y - y1) * dy
+    ) / lengthSquared;
+
     t = Math.max(0, Math.min(1, t));
 
     const px = x1 + t * dx;
@@ -670,7 +656,9 @@ function collideTriangle(x1, y1, x2, y2) {
     const dxBall = ball.x - px;
     const dyBall = ball.y - py;
 
-    const distance = Math.sqrt(dxBall * dxBall + dyBall * dyBall);
+    const distance = Math.sqrt(
+        dxBall * dxBall + dyBall * dyBall
+    );
 
     if (distance < ball.r + 5 && distance > 0) {
         const nx = dxBall / distance;
@@ -723,7 +711,6 @@ function drawBackground() {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // Estrelas decorativas.
     ctx.fillStyle = "#ffffff";
 
     for (let i = 0; i < 45; i++) {
@@ -756,7 +743,6 @@ function drawWalls() {
     ctx.lineTo(12, H - 12);
     ctx.stroke();
 
-    // Canal de lançamento.
     ctx.beginPath();
     ctx.moveTo(W - 48, H - 125);
     ctx.lineTo(W - 48, 15);
@@ -782,6 +768,7 @@ function drawBumpers() {
         gradient.addColorStop(1, "#171a48");
 
         ctx.fillStyle = gradient;
+
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
         ctx.fill();
@@ -815,7 +802,6 @@ function drawObstacles() {
 
     ctx.restore();
 
-    // Guias inferiores.
     ctx.save();
 
     ctx.strokeStyle = "#3549b7";
@@ -846,7 +832,6 @@ function drawFlippersOnBoard() {
     drawFlipper(125, 570, leftTip.x, leftTip.y, leftPressed);
     drawFlipper(295, 570, rightTip.x, rightTip.y, rightPressed);
 
-    // Eixos das paletas.
     ctx.fillStyle = "#fff07a";
 
     ctx.beginPath();
@@ -939,17 +924,13 @@ function draw() {
 // ========================================
 
 function tick(timestamp) {
-    if (!animationStarted) {
-        animationStarted = true;
-    }
+    const delta = lastTime === 0
+        ? 1
+        : Math.min((timestamp - lastTime) / 16.67, 2);
 
-    // O ciclo continua mesmo quando a partida termina.
-    // Isso permite desenhar a tela de fim de jogo e reiniciar.
-    const delta = lastTime === 0 ? 1 : Math.min((timestamp - lastTime) / 16.67, 2);
     lastTime = timestamp;
 
     if (active && launched && !gameOver) {
-        // Pequenos passos para movimento mais estável.
         const steps = Math.max(1, Math.ceil(delta));
 
         for (let i = 0; i < steps; i++) {
@@ -964,7 +945,7 @@ function tick(timestamp) {
 }
 
 // ========================================
-// BOTÕES
+// BOTÕES DO JOGO
 // ========================================
 
 launchBtn.addEventListener("click", function() {
@@ -973,6 +954,26 @@ launchBtn.addEventListener("click", function() {
 
 restartBtn.addEventListener("click", function() {
     reset();
+});
+
+// ========================================
+// NOVO BOTÃO: ATUALIZAR PÁGINA
+// ========================================
+
+updatePageBtn.addEventListener("click", function() {
+    updatePageBtn.disabled = true;
+    updatePageBtn.textContent = "⏳ ATUALIZANDO...";
+
+    /*
+       Mantém o endereço atual do jogo, inclusive /Pinball/,
+       e acrescenta um valor diferente para tentar evitar cache.
+    */
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("_refresh", Date.now().toString());
+
+    // Troca a página atual pelo endereço atualizado.
+    window.location.replace(url.toString());
 });
 
 // ========================================
@@ -1014,12 +1015,18 @@ rightBtn.addEventListener("pointercancel", releaseRight);
 // ========================================
 
 document.addEventListener("keydown", function(event) {
-    if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+    if (
+        event.key === "ArrowLeft" ||
+        event.key.toLowerCase() === "a"
+    ) {
         event.preventDefault();
         leftPressed = true;
     }
 
-    if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+    if (
+        event.key === "ArrowRight" ||
+        event.key.toLowerCase() === "d"
+    ) {
         event.preventDefault();
         rightPressed = true;
     }
@@ -1038,16 +1045,21 @@ document.addEventListener("keydown", function(event) {
 });
 
 document.addEventListener("keyup", function(event) {
-    if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+    if (
+        event.key === "ArrowLeft" ||
+        event.key.toLowerCase() === "a"
+    ) {
         leftPressed = false;
     }
 
-    if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+    if (
+        event.key === "ArrowRight" ||
+        event.key.toLowerCase() === "d"
+    ) {
         rightPressed = false;
     }
 });
 
-// Solta as paletas se a janela perder o foco.
 window.addEventListener("blur", function() {
     leftPressed = false;
     rightPressed = false;
@@ -1062,8 +1074,6 @@ prepareBall();
 updateStatus();
 draw();
 
-// Apenas um ciclo de animação é iniciado.
-// Ele continua rodando durante todo o jogo.
 requestAnimationFrame(tick);
 
 </script>
