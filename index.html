@@ -1,127 +1,619 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07101e">
 <title>Super Pinball Arcade</title>
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;touch-action:manipulation}
-#app{height:100dvh;display:flex;flex-direction:column;background:#dcdcdc}
-#top{color:#fff;background:#151515;text-align:center;padding:6px;font-weight:bold;font-size:14px}
-#game{display:block;width:100%;flex:1;min-height:0;background:#05070b;touch-action:none}
-#controls{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:7px;padding:8px;background:#e5e5e5}
-button{border:3px solid #555;border-radius:10px;background:#fff;color:#37474f;font-weight:bold;font-size:clamp(11px,2.8vw,16px);min-height:62px;padding:8px 3px;touch-action:none}
-#launch{background:#4caf50;color:white;border-color:#2e7d32}
-#restart{position:absolute;top:42px;right:8px;z-index:2;border:0;border-radius:6px;background:#ff5252;color:#fff;min-height:0;padding:8px 12px;font-size:14px}
-button:active,.pressed{filter:brightness(.78);transform:scale(.99)}
-@media (min-width:800px){#controls{padding:10px 12%;gap:14px}button{min-height:70px;font-size:16px}#top{font-size:16px}}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+    background: #07101e;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100dvh;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 10px calc(12px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+}
+
+header {
+    width: 100%;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+h1 {
+    color: #39e6ff;
+    font-size: clamp(19px, 5vw, 30px);
+    text-shadow: 0 0 12px #00aaff;
+    margin: 3px 0 6px;
+}
+
+.info {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    margin-bottom: 7px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.info span {
+    color: #ffe66d;
+}
+
+#game {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 94vw;
+    max-height: 54dvh;
+    max-height: 54vh;
+    aspect-ratio: 400 / 650;
+    border: 3px solid #29cfff;
+    border-radius: 12px;
+    background: #081a33;
+    box-shadow: 0 0 18px #008cff88;
+    touch-action: none;
+    flex-shrink: 1;
+}
+
+.controls {
+    width: min(100%, 420px);
+    margin-top: 9px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    flex-shrink: 0;
+}
+
+button {
+    min-height: 46px;
+    border: 2px solid #ffffff55;
+    border-radius: 10px;
+    padding: 10px 6px;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#leftBtn, #rightBtn {
+    background: linear-gradient(#18a8e9, #0756a5);
+    font-size: 17px;
+}
+
+#launchBtn {
+    background: linear-gradient(#ffbd35, #d45b00);
+}
+
+#restartBtn {
+    background: linear-gradient(#28c76f, #087c3c);
+}
+
+#updatePageBtn {
+    width: min(100%, 420px);
+    margin-top: 9px;
+    min-height: 45px;
+    flex-shrink: 0;
+    background: linear-gradient(#36c9ff, #1263cf);
+    border-color: #8be8ff;
+    box-shadow: 0 3px #083b83;
+}
+
+button:active {
+    transform: scale(.98);
+    filter: brightness(1.2);
+}
+
+.tip {
+    width: min(100%, 420px);
+    margin-top: 8px;
+    text-align: center;
+    color: #b9d7ef;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+@media (max-height: 650px) {
+    body { padding-top: 3px; }
+    h1 { font-size: 19px; margin: 1px 0 3px; }
+    .info { margin-bottom: 3px; font-size: 13px; }
+    #game { max-height: 43vh; }
+    .controls { margin-top: 5px; gap: 5px; }
+    button { min-height: 38px; padding: 6px; font-size: 13px; }
+    #updatePageBtn { margin-top: 5px; min-height: 38px; }
+    .tip { margin-top: 4px; }
+}
 </style>
 </head>
+
 <body>
-<div id="app">
-  <div id="top">SUPER PINBALL ARCADE</div>
-  <canvas id="game"></canvas>
-  <button id="restart">REINICIAR ↻</button>
-  <div id="controls">
-    <button id="left">← SETA ESQ.<br>PALHETA ESQ.</button>
-    <button id="launch">▲ ESPAÇO ▲<br>LANÇAR BOLA</button>
-    <button id="right">SETA DIR. →<br>PALHETA DIR.</button>
-  </div>
+
+<header>
+    <h1>🎮 SUPER PINBALL ARCADE</h1>
+    <div class="info">
+        <div>PONTOS: <span id="score">0</span></div>
+        <div>RECORDE: <span id="record">0</span></div>
+        <div>BOLAS: <span id="balls">3</span></div>
+    </div>
+</header>
+
+<canvas id="game" width="400" height="650"></canvas>
+
+<div class="controls">
+    <button id="leftBtn" type="button">◀ FLIPER</button>
+    <button id="rightBtn" type="button">FLIPER ▶</button>
+    <button id="launchBtn" type="button">🚀 LANÇAR BOLA</button>
+    <button id="restartBtn" type="button">🔄 REINICIAR</button>
 </div>
+
+<button id="updatePageBtn" type="button">🌐 ATUALIZAR SITE</button>
+
+<div class="tip">
+    Toque em LANÇAR BOLA para começar.<br>
+    Segure os botões FLIPER para rebater a bola.
+</div>
+
 <script>
-(() => {
-const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
-const status=document.getElementById('top');
-let W=0,H=0,util=0,r=11,grav=.42,ball={x:0,y:0},vx=0,vy=0,score=0,record=Number(localStorage.getItem('pinballRecord')||0);
-let launched=false,arena=false,active=true,leftOn=false,rightOn=false,raf=0,last=0;
-let obstacles=[],flippers=[];
-function beep(high=false){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=high?880:587;g.gain.value=.035;o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+.055);o.onended=()=>a.close()}catch(e){}}
-function resize(){
- const dpr=Math.min(devicePixelRatio||1,2),rect=canvas.getBoundingClientRect();
- W=rect.width;H=rect.height;canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
- util=W- Math.max(42,W*.045);r=Math.max(5,Math.min(12,W*.014));
- setup();
+"use strict";
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const scoreText = document.getElementById("score");
+const recordText = document.getElementById("record");
+const ballsText = document.getElementById("balls");
+
+const W = 400;
+const H = 650;
+
+let score = 0;
+let balls = 3;
+let record = 0;
+let gameOver = false;
+let ballInLauncher = true;
+let leftPressed = false;
+let rightPressed = false;
+let lastTime = 0;
+let animationId = null;
+
+try {
+    record = Number(localStorage.getItem("pinballRecord")) || 0;
+} catch (e) {
+    record = 0;
 }
-function setup(){
- const bumpR=Math.max(13,W*.038);
- obstacles=[
- {x:util*.30,y:H*.25,rad:bumpR,color:'#00e5ff',points:10,impulse:1.18,high:false},
- {x:util*.70,y:H*.25,rad:bumpR,color:'#00e5ff',points:10,impulse:1.18,high:false},
- {x:util*.50,y:H*.38,rad:bumpR,color:'#e040fb',points:10,impulse:1.18,high:false},
- {x:util*.15,y:H*.12,rad:bumpR,color:'#ffd700',points:30,impulse:1.22,high:true,star:true},
- {x:util*.50,y:H*.10,rad:bumpR,color:'#ffd700',points:30,impulse:1.22,high:true,star:true},
- {x:util*.85,y:H*.12,rad:bumpR,color:'#ffd700',points:30,impulse:1.22,high:true,star:true},
- {x:util*.20,y:H*.52,rad:bumpR,color:'#ff1744',points:50,impulse:1.35,high:true,diamond:true},
- {x:util*.80,y:H*.52,rad:bumpR,color:'#ff1744',points:50,impulse:1.35,high:true,diamond:true}
- ];
- ball={x:W-25,y:H-45};vx=vy=0;flippers=[];
+recordText.textContent = record;
+
+const ball = {
+    x: 350,
+    y: 555,
+    vx: 0,
+    vy: 0,
+    r: 9
+};
+
+const bumpers = [
+    {x: 115, y: 180, r: 30, color: "#ff3c89"},
+    {x: 250, y: 220, r: 31, color: "#25dfff"},
+    {x: 180, y: 310, r: 28, color: "#ffe24a"}
+];
+
+const leftFlipper = {
+    x: 115, y: 535, length: 83, angle: 0.25
+};
+
+const rightFlipper = {
+    x: 285, y: 535, length: 83, angle: Math.PI - 0.25
+};
+
+function updateText() {
+    scoreText.textContent = score;
+    ballsText.textContent = balls;
+    recordText.textContent = record;
 }
-function start(){if(!active){reset();return}if(!launched){beep(true);vx=0;vy=-Math.sqrt(2*grav*(H-50))-5.5;launched=true;arena=false;}}
-function reset(){score=0;active=true;launched=false;arena=false;leftOn=rightOn=false;ball={x:W-25,y:H-45};vx=vy=0;updateStatus();draw();}
-function updateStatus(){status.textContent=`PONTOS: ${score} | RECORDE: ${record}`;}
-function geometry(){
- const y=H*.99, gapL=util*.33,gapR=util*.67,len=util*.15;
- const aL=leftOn?-22:16,aR=rightOn?202:164;
- const radL=aL*Math.PI/180,radR=aR*Math.PI/180;
- flippers=[
- {x1:gapL,y1:y,x2:gapL+Math.cos(radL)*len,y2:y+Math.sin(radL)*len,active:leftOn,side:'L'},
- {x1:gapR,y1:y,x2:gapR+Math.cos(radR)*len,y2:y+Math.sin(radR)*len,active:rightOn,side:'R'}
- ];
+
+function saveRecord() {
+    if (score > record) {
+        record = score;
+        try {
+            localStorage.setItem("pinballRecord", String(record));
+        } catch (e) {}
+    }
+    updateText();
 }
-function lineHit(f,x,y){let dx=f.x2-f.x1,dy=f.y2-f.y1,u=((x-f.x1)*dx+(y-f.y1)*dy)/(dx*dx+dy*dy||1);u=Math.max(0,Math.min(1,u));return Math.hypot(x-(f.x1+u*dx),y-(f.y1+u*dy))<r+8}
-function draw(){
- ctx.clearRect(0,0,W,H);ctx.fillStyle='#05070b';ctx.fillRect(0,0,W,H);
- const startY=H*.60,endY=H*.99,gL=util*.33,gR=util*.67;
- // launcher lane and frame
- ctx.strokeStyle='#858585';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(util,65);ctx.lineTo(util,H);ctx.stroke();ctx.setLineDash([]);
- ctx.strokeStyle='yellow';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(util,45);ctx.lineTo(W,0);ctx.stroke();
- for(let i=0;i<3;i++){ctx.fillStyle='#00ff00';ctx.font='bold 26px Arial';ctx.textAlign='center';ctx.fillText('▲',W-22,H*.22+i*H*.19)}
- // funnel walls
- ctx.fillStyle='#1e1e1e';ctx.strokeStyle='yellow';ctx.lineWidth=3;
- ctx.beginPath();ctx.moveTo(0,startY);ctx.lineTo(gL,endY);ctx.lineTo(0,endY);ctx.closePath();ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.moveTo(util,startY);ctx.lineTo(gR,endY);ctx.lineTo(util,endY);ctx.closePath();ctx.fill();ctx.stroke();
- for(const o of obstacles){
-  ctx.beginPath();ctx.arc(o.x,o.y,o.rad,0,Math.PI*2);ctx.fillStyle=o.star?'#222':o.color;ctx.fill();ctx.lineWidth=o.star?3:2;ctx.strokeStyle=o.star?o.color:'#fff';ctx.stroke();
-  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`bold ${o.star?20:o.diamond?22:16}px Arial`;ctx.fillText(o.star?'★':o.diamond?'♦':'●',o.x,o.y);
- }
- geometry();
- for(const f of flippers){
-  ctx.fillStyle='#ef5350';ctx.strokeStyle='#b71c1c';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(f.x1,f.y1-6);ctx.lineTo(f.x1,f.y1+34);ctx.lineTo(f.x1+(f.side==='L'?12:-12),f.y1+34);ctx.lineTo(f.x2,f.y2);ctx.closePath();ctx.fill();ctx.stroke();
- }
- // ball
- ctx.beginPath();ctx.arc(ball.x,ball.y,r,0,Math.PI*2);ctx.fillStyle='#f5f5f5';ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#b0b0b0';ctx.stroke();
- if(!active){ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='bold 25px Arial';ctx.fillText('GAME OVER',W/2,H/2-12);ctx.font='bold 15px Arial';ctx.fillText('Toque em REINICIAR ou LANÇAR BOLA',W/2,H/2+18)}
+
+function resetBall() {
+    ball.x = 350;
+    ball.y = 555;
+    ball.vx = 0;
+    ball.vy = 0;
+    ballInLauncher = true;
 }
-function tick(t){
- if(!active){draw();return}
- if(launched){
-  vy+=grav;vx=Math.max(-22,Math.min(22,vx));vy=Math.max(-38,Math.min(38,vy));ball.x+=vx;ball.y+=vy;
-  if(!arena){if(ball.x>=util&&ball.y<=110){vx=-17.5;vy=3.5;arena=true;ball.x-=20;ball.y+=15}}
-  else if(ball.x-r<util&&ball.x+r>=util&&ball.y>35){vx=-Math.abs(vx);ball.x-=4}
-  if(ball.x-r<=0){vx=Math.abs(vx)*1.01;ball.x=r+2}else if(ball.x+r>=W){vx=-Math.abs(vx)*1.01;ball.x=W-r-2}
-  if(ball.y-r<=0){vy=Math.abs(vy)*.85;ball.y=r+2}
-  const startY=H*.60,endY=H*.99,gL=util*.33,gR=util*.67;
-  if(arena&&ball.y>=startY&&ball.y<=endY){
-   if(ball.x<=gL){let prop=ball.x/gL,lim=startY+(endY-startY)*prop;if(ball.y+r>=lim-4){vx=Math.abs(vx)*.4+4.5;vy=Math.abs(vy)*.5+3;ball.x+=3;ball.y+=2}}
-   else if(ball.x>=gR&&ball.x<util){let prop=(util-ball.x)/(util-gR),lim=startY+(endY-startY)*prop;if(ball.y+r>=lim-4){vx=-Math.abs(vx)*.4-4.5;vy=Math.abs(vy)*.5+3;ball.x-=3;ball.y+=2}}
-  }
-  for(const o of obstacles){if(Math.hypot(ball.x-o.x,ball.y-o.y)<o.rad+r){beep(o.high);vy=-vy*o.impulse;vx+=(ball.x-o.x)*.45;score+=o.points;if(score>record){record=score;localStorage.setItem('pinballRecord',record)}updateStatus();ball.x+=vx*1.05;ball.y+=vy*1.05}}
-  geometry();let touched=false;
-  if(arena){for(const f of flippers){if(lineHit(f,ball.x,ball.y)){beep(false);if(f.active){vy=-38;vx=f.side==='L'?(ball.x-gL)*.15+6:(ball.x-gR)*.15-6}else{vy=-Math.abs(vy)*1.45;vx=f.side==='L'?Math.abs(vx)*1.1+3:-Math.abs(vx)*1.1-3}ball.x+=f.side==='L'?2:-2;ball.y-=22;touched=true;break}}}
-  if(arena&&ball.y>endY+r&&!touched){if(ball.x>gL&&ball.x<gR){active=false;status.textContent=`GAME OVER! PONTOS: ${score} | RECORDE: ${record} — reinicie`;}else{vy=-8;vx=ball.x<W/2?4:-4;ball.y-=20}}
- }
- draw();raf=requestAnimationFrame(tick);
+
+function restartGame() {
+    score = 0;
+    balls = 3;
+    gameOver = false;
+    leftPressed = false;
+    rightPressed = false;
+    resetBall();
+    updateText();
+    draw();
 }
-function hold(id,down,up){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();b.setPointerCapture?.(e.pointerId);down();b.classList.add('pressed')});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,e=>{up();b.classList.remove('pressed')})}
-hold('left',()=>{leftOn=true;beep();},()=>leftOn=false);
-hold('right',()=>{rightOn=true;beep();},()=>rightOn=false);
-document.getElementById('launch').addEventListener('click',start);
-document.getElementById('restart').addEventListener('click',reset);
-window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp',' '].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')leftOn=true;if(e.key==='ArrowRight')rightOn=true;if(e.key===' '||e.key==='ArrowUp')start();if(e.key==='Escape')reset()});
-window.addEventListener('keyup',e=>{if(e.key==='ArrowLeft')leftOn=false;if(e.key==='ArrowRight')rightOn=false});
-window.addEventListener('resize',resize);
-updateStatus();resize();cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);
-})();
+
+function launchBall() {
+    if (gameOver) {
+        restartGame();
+    }
+
+    if (ballInLauncher) {
+        ballInLauncher = false;
+        ball.vx = -2.2;
+        ball.vy = -10.5;
+    }
+}
+
+function loseBall() {
+    if (gameOver) return;
+
+    balls--;
+    saveRecord();
+
+    if (balls <= 0) {
+        balls = 0;
+        gameOver = true;
+        ballInLauncher = false;
+    } else {
+        resetBall();
+    }
+
+    updateText();
+}
+
+function addPoints(amount) {
+    score += amount;
+    saveRecord();
+}
+
+function drawCircle(x, y, r, color, glow = 0) {
+    ctx.save();
+    if (glow) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = glow;
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawLine(x1, y1, x2, y2, color, width) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.stroke();
+}
+
+function drawFlipper(f, isLeft, pressed) {
+    const angle = isLeft
+        ? (pressed ? -0.43 : 0.25)
+        : (pressed ? Math.PI + 0.43 : Math.PI - 0.25);
+
+    const x2 = f.x + Math.cos(angle) * f.length;
+    const y2 = f.y + Math.sin(angle) * f.length;
+
+    drawLine(f.x, f.y, x2, y2, "#08101c", 24);
+    drawLine(f.x, f.y, x2, y2, pressed ? "#fff36b" : "#ffb52e", 15);
+    drawCircle(f.x, f.y, 13, "#e9f8ff");
+}
+
+function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, "#102b52");
+    bg.addColorStop(1, "#050b19");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // Bordas da mesa
+    drawLine(20, 20, 20, 585, "#27dfff", 5);
+    drawLine(20, 20, 380, 20, "#27dfff", 5);
+    drawLine(380, 20, 380, 585, "#27dfff", 5);
+    drawLine(20, 585, 100, 625, "#27dfff", 5);
+    drawLine(380, 585, 300, 625, "#27dfff", 5);
+    drawLine(100, 625, 300, 625, "#27dfff", 5);
+
+    // Guia de lançamento
+    drawLine(340, 65, 340, 555, "#9bb8dc", 2);
+    drawLine(365, 65, 365, 555, "#9bb8dc", 2);
+
+    // Luzes e bumpers
+    bumpers.forEach((b, i) => {
+        drawCircle(b.x, b.y, b.r + 7, "#193c61");
+        drawCircle(b.x, b.y, b.r, b.color, 15);
+        drawCircle(b.x - 7, b.y - 7, 7, "#ffffff");
+        ctx.fillStyle = "#07101e";
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("+", b.x, b.y + 6);
+    });
+
+    // Obstáculos
+    drawLine(45, 390, 105, 435, "#f7c64a", 9);
+    drawLine(355, 390, 295, 435, "#f7c64a", 9);
+    drawCircle(45, 390, 8, "#ffffff");
+    drawCircle(355, 390, 8, "#ffffff");
+
+    // Flippers
+    drawFlipper(leftFlipper, true, leftPressed);
+    drawFlipper(rightFlipper, false, rightPressed);
+
+    // Bola
+    drawCircle(ball.x, ball.y, ball.r + 2, "#a6d8ff", 9);
+    drawCircle(ball.x - 2, ball.y - 2, ball.r - 2, "#ffffff");
+
+    // Mensagem de estado
+    ctx.textAlign = "center";
+    if (gameOver) {
+        ctx.fillStyle = "#ff5577";
+        ctx.font = "bold 31px Arial";
+        ctx.fillText("FIM DE JOGO", 200, 295);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "18px Arial";
+        ctx.fillText("Toque em REINICIAR", 200, 330);
+    } else if (ballInLauncher) {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 15px Arial";
+        ctx.fillText("TOQUE EM LANÇAR BOLA", 205, 490);
+        ctx.fillText("PARA COMEÇAR!", 205, 513);
+    }
+
+    ctx.textAlign = "start";
+}
+
+function hitBumper(b) {
+    const dx = ball.x - b.x;
+    const dy = ball.y - b.y;
+    const distance = Math.hypot(dx, dy);
+    const minDistance = ball.r + b.r;
+
+    if (distance < minDistance && distance > 0) {
+        const nx = dx / distance;
+        const ny = dy / distance;
+
+        ball.x = b.x + nx * (minDistance + 1);
+        ball.y = b.y + ny * (minDistance + 1);
+
+        const speed = ball.vx * nx + ball.vy * ny;
+        if (speed < 0) {
+            ball.vx -= 2 * speed * nx;
+            ball.vy -= 2 * speed * ny;
+        }
+
+        ball.vx += nx * 2.5;
+        ball.vy += ny * 2.5;
+
+        limitSpeed();
+        addPoints(100);
+    }
+}
+
+function limitSpeed() {
+    const maxSpeed = 13;
+    const speed = Math.hypot(ball.vx, ball.vy);
+
+    if (speed > maxSpeed) {
+        ball.vx = ball.vx / speed * maxSpeed;
+        ball.vy = ball.vy / speed * maxSpeed;
+    }
+}
+
+function hitFlipper(f, isLeft, pressed) {
+    const angle = isLeft
+        ? (pressed ? -0.43 : 0.25)
+        : (pressed ? Math.PI + 0.43 : Math.PI - 0.25);
+
+    const x2 = f.x + Math.cos(angle) * f.length;
+    const y2 = f.y + Math.sin(angle) * f.length;
+
+    const dx = x2 - f.x;
+    const dy = y2 - f.y;
+    const lengthSq = dx * dx + dy * dy;
+
+    let t = ((ball.x - f.x) * dx + (ball.y - f.y) * dy) / lengthSq;
+    t = Math.max(0, Math.min(1, t));
+
+    const px = f.x + t * dx;
+    const py = f.y + t * dy;
+    const distX = ball.x - px;
+    const distY = ball.y - py;
+    const distance = Math.hypot(distX, distY);
+
+    if (distance < ball.r + 8 && distance > 0) {
+        const nx = distX / distance;
+        const ny = distY / distance;
+
+        ball.x = px + nx * (ball.r + 9);
+        ball.y = py + ny * (ball.r + 9);
+
+        if (pressed) {
+            ball.vy = -10.5;
+            ball.vx += isLeft ? 2.4 : -2.4;
+        } else {
+            ball.vx += nx * 2;
+            ball.vy += ny * 2;
+        }
+
+        limitSpeed();
+        addPoints(10);
+    }
+}
+
+function update(dt) {
+    if (gameOver || ballInLauncher) return;
+
+    const step = Math.min(dt, 2.2);
+
+    // Gravidade moderada
+    ball.vy += 0.20 * step;
+    ball.x += ball.vx * step;
+    ball.y += ball.vy * step;
+
+    // Paredes
+    if (ball.x - ball.r < 24) {
+        ball.x = 24 + ball.r;
+        ball.vx = Math.abs(ball.vx) * 0.82;
+    }
+
+    if (ball.x + ball.r > 376) {
+        ball.x = 376 - ball.r;
+        ball.vx = -Math.abs(ball.vx) * 0.82;
+    }
+
+    if (ball.y - ball.r < 25) {
+        ball.y = 25 + ball.r;
+        ball.vy = Math.abs(ball.vy) * 0.8;
+    }
+
+    // Obstáculos inclinados
+    if (ball.y > 380 && ball.y < 450) {
+        if (ball.x < 105 && ball.x > 40) {
+            ball.vx = Math.abs(ball.vx) + 1;
+            ball.vy = -Math.abs(ball.vy) * 0.8;
+        }
+
+        if (ball.x > 295 && ball.x < 360) {
+            ball.vx = -Math.abs(ball.vx) - 1;
+            ball.vy = -Math.abs(ball.vy) * 0.8;
+        }
+    }
+
+    bumpers.forEach(hitBumper);
+
+    hitFlipper(leftFlipper, true, leftPressed);
+    hitFlipper(rightFlipper, false, rightPressed);
+
+    // Evita velocidade excessiva
+    limitSpeed();
+
+    // Bola perdida
+    if (ball.y > H + 20) {
+        loseBall();
+    }
+}
+
+function loop(time) {
+    if (!lastTime) lastTime = time;
+
+    const dt = (time - lastTime) / 16.67;
+    lastTime = time;
+
+    update(dt);
+    draw();
+
+    animationId = requestAnimationFrame(loop);
+}
+
+function setButtonHold(id, side) {
+    const btn = document.getElementById(id);
+
+    const down = (e) => {
+        e.preventDefault();
+        if (side === "left") leftPressed = true;
+        if (side === "right") rightPressed = true;
+    };
+
+    const up = (e) => {
+        e.preventDefault();
+        if (side === "left") leftPressed = false;
+        if (side === "right") rightPressed = false;
+    };
+
+    btn.addEventListener("pointerdown", down);
+    btn.addEventListener("pointerup", up);
+    btn.addEventListener("pointercancel", up);
+    btn.addEventListener("pointerleave", up);
+}
+
+setButtonHold("leftBtn", "left");
+setButtonHold("rightBtn", "right");
+
+document.getElementById("launchBtn").addEventListener("click", launchBall);
+document.getElementById("restartBtn").addEventListener("click", restartGame);
+
+// Atualiza a página atual, sem sair do site
+document.getElementById("updatePageBtn").addEventListener("click", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("atualizar", Date.now().toString());
+    window.location.replace(url.toString());
+});
+
+// Teclado para jogar no computador
+document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        leftPressed = true;
+        e.preventDefault();
+    }
+
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        rightPressed = true;
+        e.preventDefault();
+    }
+
+    if (e.code === "Space") {
+        launchBall();
+        e.preventDefault();
+    }
+});
+
+document.addEventListener("keyup", (e) => {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        leftPressed = false;
+    }
+
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        rightPressed = false;
+    }
+});
+
+// Evita que o navegador fique com a página ampliada por gestos
+document.addEventListener("gesturestart", e => e.preventDefault());
+
+updateText();
+resetBall();
+draw();
+
+if (animationId !== null) {
+    cancelAnimationFrame(animationId);
+}
+lastTime = 0;
+animationId = requestAnimationFrame(loop);
 </script>
+
 </body>
 </html>
+```
