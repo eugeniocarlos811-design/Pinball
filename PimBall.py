@@ -5,10 +5,6 @@ html
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-
 <title>Super Pinball Arcade</title>
 
 <style>
@@ -109,12 +105,31 @@ button {
     box-shadow: 0 4px #813700;
 }
 
+/* BOTÃO NOVO DE ATUALIZAÇÃO */
 #updatePageBtn {
+    display: block;
     width: 100%;
-    margin-top: 12px;
-    background: linear-gradient(#3985ff, #1745ad);
-    box-shadow: 0 4px #102c70;
-    border: 1px solid #7caaff;
+    margin-top: 15px;
+    padding: 16px 8px;
+    background: linear-gradient(180deg, #3985ff, #123caa);
+    color: #ffffff;
+    border: 2px solid #9fc5ff;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #0a245f, 0 0 15px #3985ff88;
+    position: relative;
+    z-index: 10;
+}
+
+#updatePageBtn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #0a245f;
+}
+
+#updatePageBtn:disabled {
+    opacity: 0.7;
+    cursor: wait;
 }
 
 button:active {
@@ -140,6 +155,7 @@ button:active {
     font-size: 12px;
     line-height: 1.5;
     margin-top: 12px;
+    padding-bottom: 12px;
 }
 
 @media (max-height: 700px) {
@@ -158,6 +174,10 @@ button:active {
     button {
         padding-top: 11px;
         padding-bottom: 11px;
+    }
+
+    #updatePageBtn {
+        padding: 13px 8px;
     }
 }
 </style>
@@ -183,7 +203,10 @@ button:active {
         <button id="restartBtn">🔄 REINICIAR</button>
     </div>
 
-    <button id="updatePageBtn">🌐 ATUALIZAR JOGO</button>
+    <!-- BOTÃO NOVO -->
+    <button type="button" id="updatePageBtn">
+        🌐 ATUALIZAR JOGO
+    </button>
 
     <div class="controls">
         <button id="leftBtn" class="flipper-btn">◀ ESQUERDA</button>
@@ -194,7 +217,7 @@ button:active {
         Use os botões para controlar as palhetas.<br>
         No computador, use as setas ← → ou as teclas A e D.<br>
         Se a bola cair, pressione REINICIAR e depois LANÇAR.<br>
-        Use ATUALIZAR JOGO para recarregar a página.
+        O botão azul recarrega a página do jogo.
     </div>
 
 </div>
@@ -376,7 +399,7 @@ function addScore(points) {
         try {
             localStorage.setItem("pinballRecord", record);
         } catch (e) {
-            // O jogo continua mesmo sem armazenamento local.
+            // O jogo continua funcionando sem armazenamento local.
         }
     }
 
@@ -957,22 +980,19 @@ restartBtn.addEventListener("click", function() {
 });
 
 // ========================================
-// NOVO BOTÃO: ATUALIZAR PÁGINA
+// BOTÃO ATUALIZAR JOGO
 // ========================================
 
 updatePageBtn.addEventListener("click", function() {
     updatePageBtn.disabled = true;
     updatePageBtn.textContent = "⏳ ATUALIZANDO...";
 
-    /*
-       Mantém o endereço atual do jogo, inclusive /Pinball/,
-       e acrescenta um valor diferente para tentar evitar cache.
-    */
-
     const url = new URL(window.location.href);
-    url.searchParams.set("_refresh", Date.now().toString());
 
-    // Troca a página atual pelo endereço atualizado.
+    // Cria um parâmetro diferente a cada clique.
+    url.searchParams.set("atualizar", Date.now().toString());
+
+    // Recarrega o endereço sem adicionar uma entrada ao histórico.
     window.location.replace(url.toString());
 });
 
