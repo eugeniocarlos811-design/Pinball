@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -148,8 +149,8 @@ canvas {
     </div>
 
     <div class="instructions">
-        Segure LANÇAR para comprimir a mola para baixo e solte para disparar.
-        Use ESQ. e DIR. para controlar as palhetas.
+        Segure LANÇAR para comprimir a mola e solte para disparar.
+        Use ESQ. e DIR. para rebater.
     </div>
 
 </div>
@@ -169,17 +170,14 @@ let gameOver = false;
 
 highscoreEl.textContent = highscore;
 
-const R = 8;
-
-// Limites do corredor de lançamento
+// Corredor de lançamento
 const chute = {
-    left: 333,
-    right: 363,
-    top: 42,
+    left: 325,
+    right: 365,
+    top: 40,
     bottom: 515
 };
 
-// Mola: o cursor desce quando comprimido
 const launcher = {
     x: 350,
     baseY: 510,
@@ -192,14 +190,15 @@ const ball = {
     y: 470,
     vx: 0,
     vy: 0,
-    radius: R,
+    radius: 8,
     inChute: true,
-    active: true
+    active: true,
+
+    // Enquanto true, a bola está subindo pelo corredor.
+    launching: false
 };
 
-// Palhetas aproximadas.
-// As pontas ficam separadas por cerca de 16 pixels
-// quando estão na posição de descanso.
+// Palhetas
 const flipperLeft = {
     x: 139,
     y: 475,
@@ -241,7 +240,7 @@ const pins = [];
 [
     {count:5, y:90, minX:100, maxX:240},
     {count:6, y:180, minX:80, maxX:260},
-    {count:7, y:300, minX:70, maxX:270},
+    {count:7, y:300, minX:70, maxX:280},
     {count:8, y:360, minX:60, maxX:280}
 ].forEach(row => {
     const step = (row.maxX-row.minX)/(row.count-1);
@@ -261,27 +260,22 @@ window.addEventListener("keydown", e => {
         e.preventDefault();
     }
 
-    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a")
         keys.left = true;
-    }
 
-    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d")
         keys.right = true;
-    }
 
-    if(e.key === " " || e.key === "ArrowDown") {
+    if(e.key === " " || e.key === "ArrowDown")
         keys.launch = true;
-    }
 });
 
 window.addEventListener("keyup", e => {
-    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a")
         keys.left = false;
-    }
 
-    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d")
         keys.right = false;
-    }
 
     if(e.key === " " || e.key === "ArrowDown") {
         if(keys.launch) {
@@ -291,6 +285,7 @@ window.addEventListener("keyup", e => {
     }
 });
 
+// Botões
 function setupHoldButton(id, start, finish) {
     const btn = document.getElementById(id);
 
@@ -310,7 +305,6 @@ function setupHoldButton(id, start, finish) {
     });
 
     btn.addEventListener("pointercancel", finish);
-
     btn.addEventListener("lostpointercapture", finish);
 }
 
@@ -343,19 +337,21 @@ document.getElementById("btn-update").addEventListener("click", () => {
     location.reload();
 });
 
-// Disparo: a mola empurra a bola para cima.
-// Um pequeno desvio para a esquerda ajuda a entrar no tabuleiro.
+// LANÇAMENTO CORRIGIDO
 function releaseLauncher() {
     if(ball.inChute && launcher.compress > 0) {
-        const power = 14 + launcher.compress * 0.40;
-
         ball.inChute = false;
-        ball.vy = -Math.min(power, 32);
-        ball.vx = -2.2;
 
-        // A bola deixa o corredor por cima.
+        // Mantém a bola dentro do corredor durante a subida.
+        ball.launching = true;
         ball.x = 350;
-        ball.y = Math.min(ball.y, 470);
+
+        // A bola sobe até a saída superior.
+        ball.vx = 0;
+        ball.vy = -Math.min(
+            14 + launcher.compress * 0.40,
+            32
+        );
     }
 
     launcher.compress = 0;
@@ -368,6 +364,7 @@ function resetBall() {
     ball.vy = 0;
     ball.inChute = true;
     ball.active = true;
+    ball.launching = false;
 
     launcher.compress = 0;
     keys.launch = false;
@@ -398,10 +395,9 @@ function addScore(value) {
     }
 }
 
-// Colisão precisa entre a bola e um segmento.
-// Funciona mesmo quando a bola se move rapidamente.
-function collideSegment(x1, y1, x2, y2, thickness, movingFlipper=false) {
-    if(ball.inChute) return false;
+// Colisão com segmento
+function collideSegment(x1,y1,x2,y2,thickness,movingFlipper=false) {
+    if(ball.inChute || ball.launching) return false;
 
     const dx = x2-x1;
     const dy = y2-y1;
@@ -409,7 +405,7 @@ function collideSegment(x1, y1, x2, y2, thickness, movingFlipper=false) {
 
     if(len2 === 0) return false;
 
-    const u = Math.max(0, Math.min(1,
+    const u = Math.max(0,Math.min(1,
         ((ball.x-x1)*dx+(ball.y-y1)*dy)/len2
     ));
 
@@ -433,7 +429,6 @@ function collideSegment(x1, y1, x2, y2, thickness, movingFlipper=false) {
         ny = dx/length;
     }
 
-    // Corrigir a posição para impedir que a bola atravesse o objeto.
     ball.x = px+nx*(minDist+0.5);
     ball.y = py+ny*(minDist+0.5);
 
@@ -444,19 +439,19 @@ function collideSegment(x1, y1, x2, y2, thickness, movingFlipper=false) {
         ball.vy -= 1.8*dot*ny;
     }
 
-    if(movingFlipper) {
-        ball.vy -= 1.0;
-    }
+    if(movingFlipper) ball.vy -= 1;
 
     return true;
 }
 
-function collideFlipper(f, isLeft) {
+function collideFlipper(f,isLeft) {
+    if(ball.launching) return;
+
     const x2 = f.x+Math.cos(f.angle)*f.length;
     const y2 = f.y+Math.sin(f.angle)*f.length;
 
     const hit = collideSegment(
-        f.x, f.y, x2, y2, f.radius, true
+        f.x,f.y,x2,y2,f.radius,true
     );
 
     if(!hit) return;
@@ -464,25 +459,23 @@ function collideFlipper(f, isLeft) {
     const moving = isLeft ? keys.left : keys.right;
 
     if(moving) {
-        // Rebatida forte ao acionar a palheta.
-        ball.vy = -Math.max(8, Math.abs(ball.vy)*0.45+8);
+        ball.vy = -Math.max(8,Math.abs(ball.vy)*0.45+8);
         ball.vx += isLeft ? 2.2 : -2.2;
-    } else {
-        // Rebate moderado quando a bola toca a palheta parada.
-        if(ball.vy > -3) ball.vy = -4;
+    } else if(ball.vy > -3) {
+        ball.vy = -4;
     }
 
-    ball.vx = Math.max(-13, Math.min(13, ball.vx));
-    ball.vy = Math.max(-22, Math.min(22, ball.vy));
+    ball.vx = Math.max(-13,Math.min(13,ball.vx));
+    ball.vy = Math.max(-22,Math.min(22,ball.vy));
 }
 
-// Colisão circular com pinos e bumpers
-function collideCircle(obj, points, power) {
-    if(ball.inChute) return;
+function collideCircle(obj,points,power) {
+    if(ball.inChute || ball.launching) return;
 
     let dx = ball.x-obj.x;
     let dy = ball.y-obj.y;
     let dist = Math.hypot(dx,dy);
+
     const minDist = ball.radius+obj.radius;
 
     if(dist >= minDist) return;
@@ -506,25 +499,23 @@ function collideCircle(obj, points, power) {
         ball.vy -= 1.8*dot*ny;
     }
 
-    // Impulso para afastar a bola do objeto.
     ball.vx += nx*power;
     ball.vy += ny*power;
 
     if(points) addScore(points);
 }
 
-// Física com subpassos para reduzir atravessamentos.
+// Atualização física
 function update() {
     if(gameOver) return;
 
-    // MOLA: a base móvel desce ao segurar o botão.
+    // Comprimir a mola para baixo
     if(keys.launch && ball.inChute) {
         launcher.compress = Math.min(
             launcher.maxCompress,
-            launcher.compress+1.0
+            launcher.compress+1
         );
 
-        // A bola acompanha a parte móvel para baixo.
         ball.y = 470+launcher.compress*0.35;
     }
 
@@ -539,83 +530,87 @@ function update() {
     )*flipperRight.speed;
 
     if(!ball.inChute) {
-        // Dividir o movimento em partes menores melhora as colisões.
-        const steps = 4;
 
-        for(let s=0; s<steps; s++) {
-            ball.vy += 0.20/steps;
+        // Durante o lançamento, o corredor controla a trajetória.
+        if(ball.launching) {
+            ball.x = 350;
+            ball.y += ball.vy;
 
-            ball.x += ball.vx/steps;
-            ball.y += ball.vy/steps;
+            // Ao chegar ao topo, entra para a esquerda.
+            if(ball.y-ball.radius <= chute.top) {
+                ball.y = chute.top+ball.radius+1;
 
-            // Parede esquerda
-            if(ball.x-ball.radius < 20) {
-                ball.x = 20+ball.radius;
-                ball.vx = Math.abs(ball.vx)*0.82;
+                ball.launching = false;
+
+                // Impulso horizontal para entrar no tabuleiro.
+                ball.vx = -7;
+                ball.vy = 1.5;
             }
+        } else {
+            // Física normal do jogo
+            const steps = 4;
 
-            // Teto do tabuleiro
-            if(ball.y-ball.radius < 20) {
-                ball.y = 20+ball.radius;
-                ball.vy = Math.abs(ball.vy)*0.82;
-            }
+            for(let s=0; s<steps; s++) {
+                ball.vy += 0.20/steps;
 
-            // Corredor: a bola que acabou de ser lançada sobe
-            // e é encaminhada para a área de jogo ao passar pelo topo.
-            if(ball.x+ball.radius > chute.left &&
-               ball.y > chute.top &&
-               ball.y < chute.bottom) {
+                ball.x += ball.vx/steps;
+                ball.y += ball.vy/steps;
 
-                ball.x = chute.left-ball.radius;
-                ball.vx = -Math.abs(ball.vx);
-            }
-
-            // Guias inferiores
-            collideSegment(20,390,139,475,3);
-            collideSegment(320,390,241,475,3);
-
-            // Pinos
-            for(const p of pins) {
-                collideCircle(p,10,0.8);
-            }
-
-            // Bumpers
-            for(const b of bumpers) {
-                const beforeX = ball.x;
-                const beforeY = ball.y;
-
-                collideCircle(b,0,0);
-
-                const dx = ball.x-b.x;
-                const dy = ball.y-b.y;
-
-                if(Math.hypot(dx,dy) < ball.radius+b.radius+1) {
-                    // O impulso é aplicado somente no contato.
-                    const angle = Math.atan2(dy,dx);
-                    ball.vx += Math.cos(angle)*2.0;
-                    ball.vy += Math.sin(angle)*2.0;
-
-                    if(b.hitTime === 0) {
-                        addScore(100);
-                        b.hitTime = 12;
-                    }
+                // Paredes
+                if(ball.x-ball.radius < 20) {
+                    ball.x = 20+ball.radius;
+                    ball.vx = Math.abs(ball.vx)*0.82;
                 }
 
-                if(b.hitTime > 0) b.hitTime--;
+                if(ball.y-ball.radius < 20) {
+                    ball.y = 20+ball.radius;
+                    ball.vy = Math.abs(ball.vy)*0.82;
+                }
+
+                // Guias inferiores
+                collideSegment(20,390,139,475,3);
+                collideSegment(320,390,241,475,3);
+
+                // Pinos
+                for(const p of pins) {
+                    collideCircle(p,10,0.8);
+                }
+
+                // Bumpers
+                for(const b of bumpers) {
+                    const oldX = ball.x;
+                    const oldY = ball.y;
+
+                    collideCircle(b,0,0);
+
+                    const dx = ball.x-b.x;
+                    const dy = ball.y-b.y;
+
+                    if(Math.hypot(dx,dy) < ball.radius+b.radius+1) {
+                        const angle = Math.atan2(dy,dx);
+
+                        ball.vx += Math.cos(angle)*2;
+                        ball.vy += Math.sin(angle)*2;
+
+                        if(b.hitTime === 0) {
+                            addScore(100);
+                            b.hitTime = 12;
+                        }
+                    }
+
+                    if(b.hitTime > 0) b.hitTime--;
+                }
+
+                collideFlipper(flipperLeft,true);
+                collideFlipper(flipperRight,false);
+
+                ball.vx = Math.max(-15,Math.min(15,ball.vx));
+                ball.vy = Math.max(-24,Math.min(24,ball.vy));
             }
 
-            // Palhetas
-            collideFlipper(flipperLeft,true);
-            collideFlipper(flipperRight,false);
-
-            // Evitar velocidades excessivas.
-            ball.vx = Math.max(-15,Math.min(15,ball.vx));
-            ball.vy = Math.max(-24,Math.min(24,ball.vy));
+            ball.vx *= 0.999;
+            ball.vy *= 0.999;
         }
-
-        // Atrito leve
-        ball.vx *= 0.999;
-        ball.vy *= 0.999;
     }
 
     // Perder bola
@@ -655,8 +650,6 @@ function drawCompressionSpring() {
         : 500;
 
     const bottomY = launcher.baseY;
-
-    // A mola é desenhada entre a bola e a base fixa.
     const height = Math.max(8,bottomY-topY);
     const coils = 8;
     const step = height/coils;
@@ -679,38 +672,48 @@ function drawCompressionSpring() {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Base fixa da mola
     ctx.fillStyle = "#ff0055";
     ctx.fillRect(launcher.x-12,bottomY,24,6);
 
-    // Haste móvel que desce ao comprimir.
+    // Peça móvel da mola
     ctx.fillStyle = "#00ccff";
-    ctx.fillRect(launcher.x-3,topY,6,8);
+    ctx.fillRect(launcher.x-4,topY,8,8);
 }
 
 function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // Contorno do tabuleiro
     ctx.strokeStyle = "#00aaff";
     ctx.lineWidth = 3;
     ctx.strokeRect(10,10,360,520);
 
-    // Corredor lateral
+    // Parede esquerda do corredor.
+    // Termina na saída superior para a bola entrar no tabuleiro.
     ctx.beginPath();
-    ctx.moveTo(chute.left,40);
-    ctx.lineTo(chute.left,525);
+    ctx.moveTo(chute.left,chute.bottom);
+    ctx.lineTo(chute.left,chute.top);
+
     ctx.strokeStyle = "#00d8ff";
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Guia superior que direciona a bola para o jogo
+    // Guia superior aberta para a bola sair pela esquerda.
     ctx.beginPath();
-    ctx.moveTo(chute.left,40);
+    ctx.moveTo(chute.left,chute.top);
     ctx.quadraticCurveTo(325,15,180,15);
     ctx.quadraticCurveTo(20,15,20,120);
+
     ctx.strokeStyle = "#00d8ff";
     ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // Parede direita do corredor
+    ctx.beginPath();
+    ctx.moveTo(chute.right,chute.top);
+    ctx.lineTo(chute.right,chute.bottom);
+
+    ctx.strokeStyle = "#00d8ff";
+    ctx.lineWidth = 3;
     ctx.stroke();
 
     // Guias inferiores
@@ -729,6 +732,7 @@ function draw() {
     for(const p of pins) {
         ctx.beginPath();
         ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
+
         ctx.fillStyle = "#ffffff";
         ctx.shadowBlur = 4;
         ctx.shadowColor = "#00f0ff";
@@ -759,7 +763,6 @@ function draw() {
     drawFlipper(flipperRight);
     drawCompressionSpring();
 
-    // Bola
     if(ball.active) {
         ctx.beginPath();
         ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2);
@@ -772,10 +775,10 @@ function draw() {
         ctx.strokeStyle = "#aaaaaa";
         ctx.lineWidth = 1;
         ctx.stroke();
+
         ctx.shadowBlur = 0;
     }
 
-    // Força da mola
     if(ball.inChute && keys.launch) {
         ctx.fillStyle = "#00ffff";
         ctx.font = "bold 12px Arial";
@@ -789,7 +792,6 @@ function draw() {
         );
     }
 
-    // Fim de jogo
     if(gameOver) {
         ctx.fillStyle = "rgba(0,0,0,0.82)";
         ctx.fillRect(10,10,360,520);
@@ -816,3 +818,4 @@ gameLoop();
 
 </body>
 </html>
+```
