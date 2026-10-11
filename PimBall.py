@@ -1,4 +1,4 @@
-html
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -105,31 +105,21 @@ button {
     box-shadow: 0 4px #813700;
 }
 
-/* BOTÃO NOVO DE ATUALIZAÇÃO */
-#updatePageBtn {
+/* NOVO BOTÃO ATUALIZAR SITE */
+#refreshBtn {
     display: block;
     width: 100%;
-    margin-top: 15px;
-    padding: 16px 8px;
-    background: linear-gradient(180deg, #3985ff, #123caa);
-    color: #ffffff;
-    border: 2px solid #9fc5ff;
-    border-radius: 12px;
-    font-size: 17px;
-    font-weight: bold;
-    box-shadow: 0 4px 0 #0a245f, 0 0 15px #3985ff88;
-    position: relative;
-    z-index: 10;
+    margin-top: 12px;
+    padding: 14px 8px;
+    background: linear-gradient(#36c9ff, #1263cf);
+    box-shadow: 0 4px #083b83;
+    border: 1px solid #79e4ff;
+    font-size: 16px;
 }
 
-#updatePageBtn:active {
+#refreshBtn:active {
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #0a245f;
-}
-
-#updatePageBtn:disabled {
-    opacity: 0.7;
-    cursor: wait;
+    box-shadow: 0 2px #083b83;
 }
 
 button:active {
@@ -155,7 +145,7 @@ button:active {
     font-size: 12px;
     line-height: 1.5;
     margin-top: 12px;
-    padding-bottom: 12px;
+    padding-bottom: 8px;
 }
 
 @media (max-height: 700px) {
@@ -174,10 +164,6 @@ button:active {
     button {
         padding-top: 11px;
         padding-bottom: 11px;
-    }
-
-    #updatePageBtn {
-        padding: 13px 8px;
     }
 }
 </style>
@@ -203,9 +189,9 @@ button:active {
         <button id="restartBtn">🔄 REINICIAR</button>
     </div>
 
-    <!-- BOTÃO NOVO -->
-    <button type="button" id="updatePageBtn">
-        🌐 ATUALIZAR JOGO
+    <!-- NOVO BOTÃO PARA RECARREGAR A PÁGINA -->
+    <button id="refreshBtn" type="button">
+        🔄 ATUALIZAR SITE
     </button>
 
     <div class="controls">
@@ -216,8 +202,7 @@ button:active {
     <div class="instructions">
         Use os botões para controlar as palhetas.<br>
         No computador, use as setas ← → ou as teclas A e D.<br>
-        Se a bola cair, pressione REINICIAR e depois LANÇAR.<br>
-        O botão azul recarrega a página do jogo.
+        Se a bola cair, pressione REINICIAR e depois LANÇAR.
     </div>
 
 </div>
@@ -241,7 +226,7 @@ const statusElement = document.getElementById("status");
 
 const launchBtn = document.getElementById("launchBtn");
 const restartBtn = document.getElementById("restartBtn");
-const updatePageBtn = document.getElementById("updatePageBtn");
+const refreshBtn = document.getElementById("refreshBtn");
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 
@@ -340,12 +325,11 @@ function prepareBall() {
 }
 
 // ========================================
-// REINICIAR JOGO
+// REINICIAR PARTIDA
 // ========================================
 
 function reset() {
     score = 0;
-
     active = true;
     gameOver = false;
     launched = false;
@@ -356,6 +340,16 @@ function reset() {
     updateStatus("Jogo reiniciado! Pressione LANÇAR.");
     draw();
 }
+
+// ========================================
+// NOVO BOTÃO: ATUALIZAR SITE
+// ========================================
+
+refreshBtn.addEventListener("click", function() {
+    // Recarrega a página atual sem sair do site.
+    // A partida será reiniciada ao carregar novamente.
+    window.location.reload();
+});
 
 // ========================================
 // LANÇAR A BOLA
@@ -399,7 +393,7 @@ function addScore(points) {
         try {
             localStorage.setItem("pinballRecord", record);
         } catch (e) {
-            // O jogo continua funcionando sem armazenamento local.
+            // Continua funcionando sem armazenamento.
         }
     }
 
@@ -489,7 +483,7 @@ function limitSpeed() {
 }
 
 // ========================================
-// COLISÃO COM AS PAREDES
+// PAREDES
 // ========================================
 
 function collideWalls() {
@@ -517,7 +511,7 @@ function collideWalls() {
 }
 
 // ========================================
-// PALETAS
+// DESENHAR PALETAS
 // ========================================
 
 function drawFlipper(x1, y1, x2, y2, pressed) {
@@ -525,6 +519,7 @@ function drawFlipper(x1, y1, x2, y2, pressed) {
 
     ctx.lineCap = "round";
     ctx.lineWidth = 15;
+
     ctx.strokeStyle = pressed ? "#fff07a" : "#ff4f91";
     ctx.shadowColor = pressed ? "#fff07a" : "#ff1680";
     ctx.shadowBlur = 14;
@@ -536,6 +531,10 @@ function drawFlipper(x1, y1, x2, y2, pressed) {
 
     ctx.restore();
 }
+
+// ========================================
+// COLISÃO DAS PALETAS
+// ========================================
 
 function flipperCollision(x1, y1, x2, y2, pressed, direction) {
     const dx = x2 - x1;
@@ -657,7 +656,7 @@ function updateBall() {
 }
 
 // ========================================
-// COLISÃO COM OBSTÁCULOS INCLINADOS
+// COLISÃO DOS OBSTÁCULOS INCLINADOS
 // ========================================
 
 function collideTriangle(x1, y1, x2, y2) {
@@ -722,7 +721,7 @@ function endGame() {
 }
 
 // ========================================
-// DESENHAR O TABULEIRO
+// FUNDO
 // ========================================
 
 function drawBackground() {
@@ -746,6 +745,10 @@ function drawBackground() {
 
     ctx.globalAlpha = 1;
 }
+
+// ========================================
+// DESENHAR PAREDES
+// ========================================
 
 function drawWalls() {
     ctx.save();
@@ -773,6 +776,10 @@ function drawWalls() {
 
     ctx.restore();
 }
+
+// ========================================
+// DESENHAR OBSTÁCULOS CIRCULARES
+// ========================================
 
 function drawBumpers() {
     for (const b of bumpers) {
@@ -803,6 +810,10 @@ function drawBumpers() {
         ctx.restore();
     }
 }
+
+// ========================================
+// DESENHAR OBSTÁCULOS
+// ========================================
 
 function drawObstacles() {
     ctx.save();
@@ -843,6 +854,10 @@ function drawObstacles() {
     ctx.restore();
 }
 
+// ========================================
+// DESENHAR PALETAS NO TABULEIRO
+// ========================================
+
 function drawFlippersOnBoard() {
     const leftTip = leftPressed
         ? { x: 205, y: 545 }
@@ -865,6 +880,10 @@ function drawFlippersOnBoard() {
     ctx.arc(295, 570, 8, 0, Math.PI * 2);
     ctx.fill();
 }
+
+// ========================================
+// DESENHAR A BOLA
+// ========================================
 
 function drawBall() {
     ctx.save();
@@ -890,6 +909,10 @@ function drawBall() {
     ctx.restore();
 }
 
+// ========================================
+// DESENHAR PARTÍCULAS
+// ========================================
+
 function drawParticles() {
     for (const p of particles) {
         ctx.save();
@@ -904,6 +927,10 @@ function drawParticles() {
         ctx.restore();
     }
 }
+
+// ========================================
+// TELA DE FIM DE JOGO
+// ========================================
 
 function drawOverlay() {
     if (!gameOver) {
@@ -930,6 +957,10 @@ function drawOverlay() {
 
     ctx.restore();
 }
+
+// ========================================
+// DESENHAR TUDO
+// ========================================
 
 function draw() {
     drawBackground();
@@ -980,23 +1011,6 @@ restartBtn.addEventListener("click", function() {
 });
 
 // ========================================
-// BOTÃO ATUALIZAR JOGO
-// ========================================
-
-updatePageBtn.addEventListener("click", function() {
-    updatePageBtn.disabled = true;
-    updatePageBtn.textContent = "⏳ ATUALIZANDO...";
-
-    const url = new URL(window.location.href);
-
-    // Cria um parâmetro diferente a cada clique.
-    url.searchParams.set("atualizar", Date.now().toString());
-
-    // Recarrega o endereço sem adicionar uma entrada ao histórico.
-    window.location.replace(url.toString());
-});
-
-// ========================================
 // CONTROLES DAS PALETAS
 // ========================================
 
@@ -1031,7 +1045,7 @@ rightBtn.addEventListener("pointerleave", releaseRight);
 rightBtn.addEventListener("pointercancel", releaseRight);
 
 // ========================================
-// TECLADO
+// TECLADO DO COMPUTADOR
 // ========================================
 
 document.addEventListener("keydown", function(event) {
@@ -1100,3 +1114,4 @@ requestAnimationFrame(tick);
 
 </body>
 </html>
+```
