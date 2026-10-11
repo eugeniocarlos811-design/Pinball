@@ -198,12 +198,12 @@
       active: true
     };
 
-    // Flippers afastados com espaço livre no centro
+    // Flippers ajustados mais próximos (deixando apenas o espaço exato da bola no meio)
     const flipperLeft = {
-      x: 45, y: 465, length: 75, angle: 0.45, targetAngle: 0.45, restAngle: 0.45, upAngle: -0.35, speed: 0.35
+      x: 85, y: 475, length: 65, angle: 0.45, targetAngle: 0.45, restAngle: 0.45, upAngle: -0.35, speed: 0.35
     };
     const flipperRight = {
-      x: 315, y: 465, length: 75, angle: Math.PI - 0.45, targetAngle: Math.PI - 0.45, restAngle: Math.PI - 0.45, upAngle: Math.PI + 0.35, speed: 0.35
+      x: 275, y: 475, length: 65, angle: Math.PI - 0.45, targetAngle: Math.PI - 0.45, restAngle: Math.PI - 0.45, upAngle: Math.PI + 0.35, speed: 0.35
     };
 
     // Bumpers
@@ -279,7 +279,8 @@
 
     function releaseLauncher() {
       if (ball.inChute && launcher.compress > 5) {
-        ball.vy = -Math.min(launcher.compress * 0.95, 40);
+        // Disparo forte para cima com empurrão definitivo para a esquerda ao entrar no jogo
+        ball.vy = -Math.min(launcher.compress * 0.95, 38);
         ball.vx = 0;
         ball.inChute = false;
       }
@@ -343,14 +344,15 @@
         ball.vy = Math.abs(ball.vy) * 0.75;
       }
 
-      // Isolamento rigoroso do Corredor da Direita (Linha roxa em X = 325)[cite: 5]
+      // Isolamento rigoroso do Corredor da Direita (Linha roxa em X = 325)
       if (ball.inChute) {
         ball.x = 350;
       } else {
         if (ball.x > 325 && ball.y < 510 && ball.y > 45) {
-          if (ball.y <= 50) {
-            ball.vx = -8.5;
-            ball.vy = Math.min(ball.vy, -3);
+          if (ball.y <= 55) {
+            // Força a saída do topo do corredor diretamente para a esquerda (entrando no jogo)
+            ball.vx = -10;
+            ball.vy = -4;
           } else {
             ball.x = 350;
             if (ball.x + ball.radius > 360) {
@@ -361,9 +363,9 @@
         }
       }
 
-      // Guia diagonal direita terminando estritamente ANTES da linha roxa (X = 325), sem invadir o corredor[cite: 5]
-      checkLineCollision(20, 380, 70, 465);
-      checkLineCollision(320, 380, 260, 465); // Término em X = 320 para garantir folga segura
+      // Guias diagonais inferiores ajustadas para o novo tamanho/posição das palhetas
+      checkLineCollision(20, 390, 85, 475);
+      checkLineCollision(320, 390, 275, 475);
 
       // Bumpers
       bumpers.forEach(b => {
@@ -466,7 +468,7 @@
       ctx.lineWidth = 3;
       ctx.strokeRect(10, 10, 360, 520);
 
-      // Canaleta Lateral Direita (Linha Roxa em X = 325)[cite: 5]
+      // Canaleta Lateral Direita (Linha Roxa em X = 325)
       ctx.beginPath();
       ctx.moveTo(325, 40);
       ctx.lineTo(325, 525);
@@ -483,10 +485,10 @@
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Guias diagonais inferiores (A direita terminando em X = 320, garantindo que não cruza a linha roxa)[cite: 5]
+      // Guias diagonais inferiores (Ajustadas para as palhetas mais próximas)
       ctx.beginPath();
-      ctx.moveTo(20, 380); ctx.lineTo(70, 465);
-      ctx.moveTo(320, 380); ctx.lineTo(260, 465);
+      ctx.moveTo(20, 390); ctx.lineTo(85, 475);
+      ctx.moveTo(320, 390); ctx.lineTo(275, 475);
       ctx.strokeStyle = '#0077ff';
       ctx.lineWidth = 5;
       ctx.stroke();
@@ -523,7 +525,7 @@
       drawFlipper(flipperLeft);
       drawFlipper(flipperRight);
 
-      // Mola de Compressão Correta (A base fica embaixo e o topo comprime para cima contra a bola)
+      // Mola de Compressão Correta
       drawCompressionSpring();
 
       // Bola
@@ -573,7 +575,7 @@
     }
 
     function drawCompressionSpring() {
-      let bottomBaseY = launcher.baseY; // 510 (Base fixa vermelha)
+      let bottomBaseY = launcher.baseY; // 510
       let ballTopY = ball.inChute ? (ball.y + ball.radius) : 500;
       let currentHeight = bottomBaseY - ballTopY;
       
