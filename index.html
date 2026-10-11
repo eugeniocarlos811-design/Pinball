@@ -37,9 +37,8 @@
       align-items: center;
     }
 
-    /* Cabeçalho */
     .title {
-      font-size: 22px;
+      font-size: 20px;
       color: #ffea00;
       text-shadow: 0 0 8px #ffaa00, 2px 2px 0px #000;
       margin-bottom: 8px;
@@ -63,7 +62,6 @@
       font-size: 15px;
     }
 
-    /* Área do Canvas */
     canvas {
       background: #030a1c;
       border: 3px solid #1a3968;
@@ -75,7 +73,6 @@
       display: block;
     }
 
-    /* Painel de Controles */
     .controls {
       width: 100%;
       margin-top: 12px;
@@ -154,7 +151,7 @@
     </div>
 
     <div class="instructions">
-      Segure ESQ. e DIR. para rebater a bola (Teclas A/D ou Setas).<br>Segure LANÇAR (ou Espaço/Seta Baixo) para carregar a mola.
+      Segure ESQ. e DIR. para rebater (Teclas A/D ou Setas).<br>Segure LANÇAR (ou Espaço) para puxar a mola e solte para disparar!
     </div>
   </div>
 
@@ -162,85 +159,68 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    // Estado do jogo
     let score = 0;
     let highscore = 0;
     let balls = 3;
     let gameOver = false;
 
-    // Elementos DOM
     const scoreEl = document.getElementById('score');
     const highscoreEl = document.getElementById('highscore');
     const ballsEl = document.getElementById('balls');
 
-    // Propriedades do Lançador / Mola
+    // Configuração da Mola (Corredor Lateral Direito x = 350)
     const launcher = {
       x: 350,
-      y: 480,
-      width: 20,
-      height: 40,
-      pull: 0,
-      maxPull: 35,
+      baseY: 500,     // Onde a mola fica presa embaixo
+      pull: 0,        // Quanto foi puxada para baixo
+      maxPull: 70,    // Força máxima aumentada
       isCharging: false
     };
 
     // Bola
     const ball = {
-      x: 360,
-      y: 460,
+      x: 350,
+      y: 480,
       vx: 0,
       vy: 0,
-      radius: 8,
+      radius: 9,
       inChute: true,
       active: true
     };
 
     // Flippers
     const flipperLeft = {
-      x: 110, y: 465, length: 60, angle: 0.3, targetAngle: 0.3, restAngle: 0.3, upAngle: -0.3, speed: 0.25
+      x: 110, y: 465, length: 65, angle: 0.35, targetAngle: 0.35, restAngle: 0.35, upAngle: -0.35, speed: 0.3
     };
     const flipperRight = {
-      x: 230, y: 465, length: 60, angle: Math.PI - 0.3, targetAngle: Math.PI - 0.3, restAngle: Math.PI - 0.3, upAngle: Math.PI + 0.3, speed: 0.25
+      x: 230, y: 465, length: 65, angle: Math.PI - 0.35, targetAngle: Math.PI - 0.35, restAngle: Math.PI - 0.35, upAngle: Math.PI + 0.35, speed: 0.3
     };
 
     // Bumpers
     const bumpers = [
-      { x: 130, y: 120, radius: 22, hitTime: 0 },
-      { x: 210, y: 140, radius: 22, hitTime: 0 },
-      { x: 170, y: 200, radius: 22, hitTime: 0 },
-      { x: 110, y: 240, radius: 18, hitTime: 0 },
-      { x: 230, y: 240, radius: 18, hitTime: 0 }
+      { x: 130, y: 130, radius: 22, hitTime: 0 },
+      { x: 210, y: 150, radius: 22, hitTime: 0 },
+      { x: 170, y: 220, radius: 22, hitTime: 0 },
+      { x: 110, y: 270, radius: 18, hitTime: 0 },
+      { x: 230, y: 270, radius: 18, hitTime: 0 }
     ];
 
-    // Pinos fixos (Pinfield)
+    // Pinos fixos
     const pins = [];
     const pinRows = [
-      { count: 5, y: 80, minX: 100, maxX: 240 },
-      { count: 6, y: 170, minX: 80, maxX: 260 },
-      { count: 7, y: 280, minX: 70, maxX: 270 },
-      { count: 8, y: 340, minX: 60, maxX: 280 }
+      { count: 5, y: 90, minX: 100, maxX: 240 },
+      { count: 6, y: 180, minX: 80, maxX: 260 },
+      { count: 7, y: 300, minX: 70, maxX: 270 },
+      { count: 8, y: 360, minX: 60, maxX: 280 }
     ];
 
     pinRows.forEach(row => {
-      const step = (row.maxX - row.minX) / (row.count - 1);
+      let step = (row.maxX - row.minX) / (row.count - 1);
       for(let i=0; i<row.count; i++) {
         pins.push({ x: row.minX + i*step, y: row.y, radius: 4 });
       }
     });
 
-    // Paredes e canaletas de colisão simples
-    const walls = [
-      // Corredor da direita
-      { x1: 340, y1: 100, x2: 340, y2: 500 },
-      // Teto arredondado / guias
-      { x1: 40, y1: 400, x2: 110, y2: 465 },
-      { x1: 300, y1: 400, x2: 230, y2: 465 },
-      // Triângulos laterais superiores
-      { x1: 30, y1: 150, x2: 70, y2: 200 },
-      { x1: 310, y1: 150, x2: 270, y2: 200 }
-    ];
-
-    // Controles
     const keys = { left: false, right: false, launch: false };
 
     // Eventos de Teclado
@@ -248,7 +228,7 @@
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
       if (e.key === ' ' || e.key === 'ArrowDown') {
-        if (!keys.launch) keys.launch = true;
+        keys.launch = true;
       }
     });
 
@@ -256,12 +236,14 @@
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
       if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
       if (e.key === ' ' || e.key === 'ArrowDown') {
-        keys.launch = false;
-        releaseLauncher();
+        if (keys.launch) {
+          keys.launch = false;
+          releaseLauncher();
+        }
       }
     });
 
-    // Eventos de Toque e Botões da Interface
+    // Controles Touch / Mouse
     function setupButton(id, onStart, onEnd) {
       const btn = document.getElementById(id);
       const start = (e) => { e.preventDefault(); onStart(); };
@@ -284,8 +266,9 @@
 
     function releaseLauncher() {
       if (ball.inChute && launcher.pull > 5) {
-        ball.vy = -Math.min(launcher.pull * 0.75, 22);
-        ball.vx = (Math.random() - 0.5) * 1;
+        // Força forte o suficiente para subir todo o corredor e entrar no campo
+        ball.vy = -Math.min(launcher.pull * 0.32, 26);
+        ball.vx = 0;
         ball.inChute = false;
       }
       launcher.pull = 0;
@@ -301,72 +284,87 @@
     }
 
     function resetBall() {
-      ball.x = 360;
-      ball.y = 460;
+      ball.x = 350;
+      ball.y = 480;
       ball.vx = 0;
       ball.vy = 0;
       ball.inChute = true;
       ball.active = true;
+      launcher.pull = 0;
     }
 
-    // Loop de Atualização da Física
     function update() {
       if (gameOver) return;
 
-      // 1. Atualizar Mola
+      // 1. Carregar mola
       if (keys.launch && ball.inChute) {
         if (launcher.pull < launcher.maxPull) {
-          launcher.pull += 1.2;
+          launcher.pull += 1.5;
         }
       }
 
-      // 2. Flippers Movimento
+      // 2. Movimento dos Flippers
       flipperLeft.targetAngle = keys.left ? flipperLeft.upAngle : flipperLeft.restAngle;
       flipperLeft.angle += (flipperLeft.targetAngle - flipperLeft.angle) * flipperLeft.speed;
 
       flipperRight.targetAngle = keys.right ? flipperRight.upAngle : flipperRight.restAngle;
       flipperRight.angle += (flipperRight.targetAngle - flipperRight.angle) * flipperRight.speed;
 
-      // 3. Movimento da Bola
+      // 3. Física da Bola
       if (!ball.inChute) {
-        ball.vy += 0.25; // Gravidade
+        ball.vy += 0.28; // Gravidade
         ball.x += ball.vx;
         ball.y += ball.vy;
 
-        // Atrito do ar
-        ball.vx *= 0.995;
-        ball.vy *= 0.995;
+        // Atrito
+        ball.vx *= 0.992;
+        ball.vy *= 0.992;
       } else {
-        ball.y = 460 + launcher.pull;
+        // Bola presa na ponta superior da mola
+        ball.y = 480 - launcher.pull;
       }
 
-      // 4. Limites da Tela (Paredes Externas)
+      // 4. Paredes do Campo
+      // Parede Esquerda
       if (ball.x - ball.radius < 15) { ball.x = 15 + ball.radius; ball.vx *= -0.7; }
-      if (ball.x + ball.radius > 365 && !ball.inChute) { 
-        // Entrada do topo da calha
-        if(ball.y > 100) {
-          ball.x = 365 - ball.radius; ball.vx *= -0.7; 
+      
+      // Canaleta Direita (Separador em x = 325)
+      if (ball.x > 325 && ball.y > 60 && ball.y < 510) {
+        if (ball.inChute) {
+          ball.x = 350; // Mantém no canal
+        } else {
+          // Se a bola vier do campo e cair no canal da direita, guia ela para baixo suavemente
+          if (ball.x > 325 && ball.y < 420 && ball.vy > 0) {
+            ball.x = 350;
+          } else if (ball.x > 365) {
+            ball.x = 365 - ball.radius;
+            ball.vx *= -0.7;
+          }
         }
       }
-      if (ball.y - ball.radius < 15) { ball.y = 15 + ball.radius; ball.vy *= -0.7; }
 
-      // 5. Colisão Bola com Canaleta Direita (Entrada no campo)
-      if (ball.x > 340 && ball.y < 80) {
-        ball.vx = -3;
+      // Topo do campo e curvatura de lançamento
+      if (ball.y - ball.radius < 15) { 
+        ball.y = 15 + ball.radius; 
+        ball.vy *= -0.7; 
       }
 
-      // 6. Colisão com Bumpers (Estrelas)
+      // Se a bola passou do topo do canal direito para dentro do campo principal
+      if (!ball.inChute && ball.x > 310 && ball.y < 65) {
+        ball.vx = -4 - Math.random() * 3; // Joga a bola para o campo principal à esquerda
+      }
+
+      // 5. Bumpers
       bumpers.forEach(b => {
         let dx = ball.x - b.x;
         let dy = ball.y - b.y;
         let dist = Math.hypot(dx, dy);
         if (dist < ball.radius + b.radius) {
           let angle = Math.atan2(dy, dx);
-          let power = 10;
+          let power = 11;
           ball.vx = Math.cos(angle) * power;
           ball.vy = Math.sin(angle) * power;
-          
-          b.hitTime = 10; // Para piscar
+          b.hitTime = 12;
           score += 100;
           scoreEl.innerText = score;
           if (score > highscore) {
@@ -377,26 +375,26 @@
         if (b.hitTime > 0) b.hitTime--;
       });
 
-      // 7. Colisão com Pinos
+      // 6. Pinos
       pins.forEach(p => {
         let dx = ball.x - p.x;
         let dy = ball.y - p.y;
         let dist = Math.hypot(dx, dy);
         if (dist < ball.radius + p.radius) {
           let angle = Math.atan2(dy, dx);
-          ball.vx = Math.cos(angle) * 5;
-          ball.vy = Math.sin(angle) * 5;
+          ball.vx = Math.cos(angle) * 5.5;
+          ball.vy = Math.sin(angle) * 5.5;
           score += 10;
           scoreEl.innerText = score;
         }
       });
 
-      // 8. Colisão com Flippers
+      // 7. Colisão Flippers
       checkFlipperCollision(flipperLeft, true);
       checkFlipperCollision(flipperRight, false);
 
-      // 9. Perdeu a Bola (Caiu na caçapa inferior)
-      if (ball.y > 530) {
+      // 8. Perder Bola (Fundo)
+      if (ball.y > 540) {
         balls--;
         ballsEl.innerText = balls;
         if (balls <= 0) {
@@ -407,12 +405,9 @@
       }
     }
 
-    // Colisão simplificada para Flippers
     function checkFlipperCollision(f, isLeft) {
       let fx2 = f.x + Math.cos(f.angle) * f.length;
       let fy2 = f.y + Math.sin(f.angle) * f.length;
-
-      // Distância do ponto à linha do flipper
       let dx = fx2 - f.x;
       let dy = fy2 - f.y;
       let len = Math.hypot(dx, dy);
@@ -425,45 +420,44 @@
 
         if (dist < ball.radius + 6) {
           let angle = Math.atan2(ball.y - py, ball.x - px);
-          let impulse = (f.targetAngle !== f.restAngle) ? 14 : 6;
+          let impulse = (f.targetAngle !== f.restAngle) ? 15 : 7;
           ball.vx = Math.cos(angle) * impulse;
-          ball.vy = Math.sin(angle) * impulse - (isLeft ? 2 : 2);
+          ball.vy = Math.sin(angle) * impulse - 3;
         }
       }
     }
 
-    // Desenho na Tela
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Fundo e Detalhes
+      // Borda principal do pinball
       ctx.strokeStyle = '#00aaff';
       ctx.lineWidth = 3;
       ctx.strokeRect(10, 10, 360, 520);
 
-      // Separador do Canal de Lançamento
+      // Canaleta Lateral Direita
       ctx.beginPath();
-      ctx.moveTo(340, 90);
-      ctx.lineTo(340, 530);
+      ctx.moveTo(325, 50);
+      ctx.lineTo(325, 525);
       ctx.strokeStyle = '#a020f0';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Desenhar Paredes/Guia Superior
+      // Guia Superior Arredondada
       ctx.beginPath();
-      ctx.moveTo(340, 90);
-      ctx.quadraticCurveTo(340, 15, 190, 15);
+      ctx.moveTo(325, 50);
+      ctx.quadraticCurveTo(325, 15, 180, 15);
       ctx.quadraticCurveTo(15, 15, 15, 120);
       ctx.strokeStyle = '#00d8ff';
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Guias Inferiores dos Flippers
+      // Guias diagonais inferiores
       ctx.beginPath();
       ctx.moveTo(15, 380); ctx.lineTo(110, 465);
-      ctx.moveTo(340, 380); ctx.lineTo(230, 465);
+      ctx.moveTo(325, 380); ctx.lineTo(230, 465);
       ctx.strokeStyle = '#0077ff';
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 5;
       ctx.stroke();
 
       // Desenhar Pinos
@@ -471,13 +465,13 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 4;
         ctx.shadowColor = '#00f0ff';
         ctx.fill();
         ctx.shadowBlur = 0;
       });
 
-      // Desenhar Bumpers (Estrelas)
+      // Desenhar Bumpers
       bumpers.forEach(b => {
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
@@ -487,7 +481,6 @@
         ctx.fill();
         ctx.stroke();
 
-        // Estrela interna
         ctx.fillStyle = '#ffffff';
         ctx.font = '16px sans-serif';
         ctx.textAlign = 'center';
@@ -499,7 +492,7 @@
       drawFlipper(flipperLeft);
       drawFlipper(flipperRight);
 
-      // Desenhar Mola de Lançamento (Animação de Movimento)
+      // Desenhar Mola Real no Canal Direito
       drawSpring();
 
       // Desenhar Bola
@@ -516,19 +509,19 @@
         ctx.shadowBlur = 0;
       }
 
-      // Tela de Game Over
+      // Game Over
       if (gameOver) {
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         ctx.fillStyle = '#ff0055';
-        ctx.font = '24px Arial Black';
+        ctx.font = '22px Arial Black';
         ctx.textAlign = 'center';
-        ctx.fillText('FIM DE JOGO', canvas.width / 2, 240);
+        ctx.fillText('FIM DE JOGO', canvas.width / 2, 230);
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = '14px Arial';
-        ctx.fillText('Toque em REINICIAR para jogar novamente', canvas.width / 2, 280);
+        ctx.font = '13px Arial';
+        ctx.fillText('Toque em REINICIAR para tentar de novo', canvas.width / 2, 270);
       }
     }
 
@@ -548,33 +541,35 @@
       ctx.restore();
     }
 
-    // Animação da mola sanfonada
+    // Desenho da Mola Sanfonada Animada
     function drawSpring() {
-      let startY = 520;
-      let endY = launcher.y + launcher.pull + 12;
-      let coils = 8;
-      let step = (startY - endY) / coils;
+      let bottomY = launcher.baseY; // Onde a base da mola fica (500)
+      let topY = 480 - launcher.pull; // Topo da mola onde a bola se apoia
+      let coils = 7;
+      let step = (bottomY - topY) / coils;
 
       ctx.beginPath();
-      ctx.moveTo(launcher.x, startY);
+      ctx.moveTo(launcher.x, bottomY);
 
       for (let i = 0; i < coils; i++) {
-        let currentY = startY - (i * step);
-        let xOffset = (i % 2 === 0) ? 8 : -8;
+        let currentY = bottomY - (i * step);
+        let xOffset = (i % 2 === 0) ? 10 : -10;
         ctx.lineTo(launcher.x + xOffset, currentY - step / 2);
         ctx.lineTo(launcher.x, currentY - step);
       }
 
       ctx.strokeStyle = '#00ffff';
       ctx.lineWidth = 3;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = '#00ffff';
       ctx.stroke();
+      ctx.shadowBlur = 0;
 
-      // Base da Mola / Empurrador
-      ctx.fillStyle = '#00aaff';
-      ctx.fillRect(launcher.x - 10, endY - 6, 20, 6);
+      // Base de apoio da mola (pistão)
+      ctx.fillStyle = '#ff0055';
+      ctx.fillRect(launcher.x - 12, bottomY, 24, 6);
     }
 
-    // Loop Principal
     function gameLoop() {
       update();
       draw();
