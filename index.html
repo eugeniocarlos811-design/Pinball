@@ -182,16 +182,15 @@
     // Mola de Compressão (X = 350)
     const launcher = {
       x: 350,
-      restY: 490,      // Posição de repouso da base da mola
-      compress: 0,     // Quanto a base sobe para comprimir
-      maxCompress: 55,
-      restHeight: 70
+      restY: 500,
+      compress: 0,
+      maxCompress: 60
     };
 
     // Bola
     const ball = {
       x: 350,
-      y: 420,
+      y: 430,
       vx: 0,
       vy: 0,
       radius: 9,
@@ -199,12 +198,12 @@
       active: true
     };
 
-    // Flippers
+    // Flippers reposicionados (com espaçamento correto como na referência)
     const flipperLeft = {
-      x: 115, y: 465, length: 65, angle: 0.35, targetAngle: 0.35, restAngle: 0.35, upAngle: -0.35, speed: 0.3
+      x: 75, y: 475, length: 70, angle: 0.35, targetAngle: 0.35, restAngle: 0.35, upAngle: -0.35, speed: 0.35
     };
     const flipperRight = {
-      x: 225, y: 465, length: 65, angle: Math.PI - 0.35, targetAngle: Math.PI - 0.35, restAngle: Math.PI - 0.35, upAngle: Math.PI + 0.35, speed: 0.3
+      x: 245, y: 475, length: 70, angle: Math.PI - 0.35, targetAngle: Math.PI - 0.35, restAngle: Math.PI - 0.35, upAngle: Math.PI + 0.35, speed: 0.35
     };
 
     // Bumpers
@@ -254,7 +253,6 @@
       }
     });
 
-    // Controles Touch / Mouse
     function setupButton(id, onStart, onEnd) {
       const btn = document.getElementById(id);
       if(!btn) return;
@@ -281,7 +279,8 @@
 
     function releaseLauncher() {
       if (ball.inChute && launcher.compress > 5) {
-        ball.vy = -Math.min(launcher.compress * 0.48, 28);
+        // Lançamento com força máxima e rápida
+        ball.vy = -Math.min(launcher.compress * 0.65, 34);
         ball.vx = 0;
         ball.inChute = false;
       }
@@ -299,7 +298,7 @@
 
     function resetBall() {
       ball.x = 350;
-      ball.y = 420;
+      ball.y = 430;
       ball.vx = 0;
       ball.vy = 0;
       ball.inChute = true;
@@ -313,10 +312,9 @@
       // 1. Compressão da Mola
       if (keys.launch && ball.inChute) {
         if (launcher.compress < launcher.maxCompress) {
-          launcher.compress += 1.5;
+          launcher.compress += 1.8;
         }
-        // A bola acompanha a compressão da mola subindo levemente
-        ball.y = 420 - launcher.compress;
+        ball.y = 430 - launcher.compress;
       }
 
       // 2. Movimento dos Flippers
@@ -326,55 +324,48 @@
       flipperRight.targetAngle = keys.right ? flipperRight.upAngle : flipperRight.restAngle;
       flipperRight.angle += (flipperRight.targetAngle - flipperRight.angle) * flipperRight.speed;
 
-      // 3. Física da Bola no Campo
+      // 3. Física da Bola
       if (!ball.inChute) {
         ball.vy += 0.28; // Gravidade
         ball.x += ball.vx;
         ball.y += ball.vy;
 
-        // Atrito
-        ball.vx *= 0.993;
-        ball.vy *= 0.993;
+        // Atrito leve
+        ball.vx *= 0.994;
+        ball.vy *= 0.994;
       }
 
-      // 4. Colisões Rígidas com as Paredes do Tabuleiro
-      // Parede Esquerda Externa
+      // 4. Paredes e Limites
       if (ball.x - ball.radius < 20) {
         ball.x = 20 + ball.radius;
         ball.vx = Math.abs(ball.vx) * 0.75;
       }
-      // Parede Direita Externa (Fora do canal)
       if (!ball.inChute && ball.x + ball.radius > 360 && ball.y > 60) {
         ball.x = 360 - ball.radius;
         ball.vx = -Math.abs(ball.vx) * 0.75;
       }
-      // Teto Superior Curvado
       if (ball.y - ball.radius < 20) {
         ball.y = 20 + ball.radius;
         ball.vy = Math.abs(ball.vy) * 0.75;
       }
 
-      // Canaleta Direita (Separador em X = 325)
+      // Canaleta Direita livre sem barreiras
       if (!ball.inChute) {
-        // Se a bola estiver subindo ou descendo pelo corredor direito
-        if (ball.x > 325 && ball.y < 480 && ball.y > 55) {
-          if (ball.y <= 60) {
-            // Saída do topo do canal para o campo principal (joga para a esquerda)
-            ball.vx = -6.5;
-            ball.vy = Math.min(ball.vy, -2);
+        if (ball.x > 325 && ball.y < 480 && ball.y > 45) {
+          if (ball.y <= 50) {
+            ball.vx = -8; // Joga com força para o campo principal
+            ball.vy = Math.min(ball.vy, -3);
           } else {
-            // Mantém dentro do canal direito
-            ball.x = 345;
+            ball.x = 350;
           }
         }
       } else {
-        // Presa no lançador
         ball.x = 350;
       }
 
-      // Guias diagonais inferiores (direcionam para os flippers)
-      checkLineCollision(20, 380, 115, 465);
-      checkLineCollision(360, 380, 265, 465);
+      // Guias diagonais inferiores
+      checkLineCollision(20, 380, 75, 475);
+      checkLineCollision(360, 380, 315, 475);
 
       // 5. Bumpers
       bumpers.forEach(b => {
@@ -415,7 +406,7 @@
       checkFlipperCollision(flipperLeft, true);
       checkFlipperCollision(flipperRight, false);
 
-      // 8. Perder Bola / Retornar ao Lançador se cair no canal inferior direito
+      // 8. Perder Bola / Fundo
       if (ball.y > 540) {
         balls--;
         ballsEl.innerText = balls;
@@ -463,9 +454,9 @@
 
         if (dist < ball.radius + 6) {
           let angle = Math.atan2(ball.y - py, ball.x - px);
-          let impulse = (f.targetAngle !== f.restAngle) ? 16 : 8;
+          let impulse = (f.targetAngle !== f.restAngle) ? 17 : 9;
           ball.vx = Math.cos(angle) * impulse;
-          ball.vy = Math.sin(angle) * impulse - 3;
+          ball.vy = Math.sin(angle) * impulse - 4;
         }
       }
     }
@@ -473,14 +464,13 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Borda principal do pinball
       ctx.strokeStyle = '#00aaff';
       ctx.lineWidth = 3;
       ctx.strokeRect(10, 10, 360, 520);
 
       // Canaleta Lateral Direita
       ctx.beginPath();
-      ctx.moveTo(325, 50);
+      ctx.moveTo(325, 40);
       ctx.lineTo(325, 525);
       ctx.strokeStyle = '#a020f0';
       ctx.lineWidth = 3;
@@ -488,7 +478,7 @@
 
       // Guia Superior Arredondada
       ctx.beginPath();
-      ctx.moveTo(325, 50);
+      ctx.moveTo(325, 40);
       ctx.quadraticCurveTo(325, 15, 180, 15);
       ctx.quadraticCurveTo(20, 15, 20, 120);
       ctx.strokeStyle = '#00d8ff';
@@ -497,13 +487,13 @@
 
       // Guias diagonais inferiores
       ctx.beginPath();
-      ctx.moveTo(20, 380); ctx.lineTo(115, 465);
-      ctx.moveTo(360, 380); ctx.lineTo(265, 465);
+      ctx.moveTo(20, 380); ctx.lineTo(75, 475);
+      ctx.moveTo(360, 380); ctx.lineTo(315, 475);
       ctx.strokeStyle = '#0077ff';
       ctx.lineWidth = 5;
       ctx.stroke();
 
-      // Desenhar Pinos
+      // Pinos
       pins.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
@@ -514,7 +504,7 @@
         ctx.shadowBlur = 0;
       });
 
-      // Desenhar Bumpers
+      // Bumpers
       bumpers.forEach(b => {
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
@@ -531,14 +521,14 @@
         ctx.fillText('★', b.x, b.y);
       });
 
-      // Desenhar Flippers
+      // Flippers
       drawFlipper(flipperLeft);
       drawFlipper(flipperRight);
 
-      // Desenhar Mola de Compressão no Canal Direito
+      // Mola de Compressão
       drawCompressionSpring();
 
-      // Desenhar Bola
+      // Bola
       if (ball.active) {
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
@@ -584,10 +574,9 @@
       ctx.restore();
     }
 
-    // Função que desenha a mola comprimindo de baixo para cima
     function drawCompressionSpring() {
-      let bottomBaseY = launcher.restY; // Base fixa embaixo (520)
-      let currentTopY = ball.inChute ? (ball.y + ball.radius) : 490; // O topo empurra a bola
+      let bottomBaseY = launcher.restY;
+      let currentTopY = ball.inChute ? (ball.y + ball.radius) : 490;
       let compressedHeight = bottomBaseY - currentTopY;
       
       let coils = 6;
@@ -612,7 +601,6 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      // Base do pistão do lançador
       ctx.fillStyle = '#ff0055';
       ctx.fillRect(launcher.x - 12, bottomBaseY, 24, 6);
     }
