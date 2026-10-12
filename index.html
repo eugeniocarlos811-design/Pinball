@@ -233,6 +233,7 @@ let rightHeld = false;
 
 bestElement.textContent = best;
 
+// Bumpers (círculos) com tempo de piscar adicionado
 const bumpers = [
     { x: 100, y: 145, r: 22, color: "#ff3e9d", flash: 0 },
     { x: 205, y: 125, r: 22, color: "#21d4fd", flash: 0 },
@@ -242,23 +243,22 @@ const bumpers = [
     { x: 215, y: 330, r: 20, color: "#ff8c42", flash: 0 }
 ];
 
-// Palhetas maiores e mais fechadas no centro (comprimento aumentado para 76)
 const flippers = {
     left: {
-        pivotX: 95,
+        pivotX: 85,
         pivotY: 545,
-        length: 76,
-        angle: -0.28,
-        rest: -0.28,
-        pressed: -0.85
+        length: 58,
+        angle: -0.35,
+        rest: -0.35,
+        pressed: -0.95
     },
     right: {
-        pivotX: 232,
+        pivotX: 242,
         pivotY: 545,
-        length: 76,
-        angle: Math.PI + 0.28,
-        rest: Math.PI + 0.28,
-        pressed: Math.PI + 0.85
+        length: 58,
+        angle: Math.PI + 0.35,
+        rest: Math.PI + 0.35,
+        pressed: Math.PI + 0.95
     }
 };
 
@@ -378,9 +378,9 @@ function collideWithFlipper(f) {
         ball.x = p.x + nx * minDist;
         ball.y = p.y + ny * minDist;
 
-        const speed = 10;
-        ball.vx = nx * speed + (f === flippers.left ? 2.5 : -2.5);
-        ball.vy = -Math.abs(ny * speed) - 4.5;
+        const speed = 9;
+        ball.vx = nx * speed + (f === flippers.left ? 2 : -2);
+        ball.vy = -Math.abs(ny * speed) - 4;
 
         playSound('flipper');
         addScore(5);
@@ -428,7 +428,7 @@ function collideWithBumpers() {
                 ball.vy += ny * 5;
             }
 
-            b.flash = 10;
+            b.flash = 10; // Ativa o efeito visual de piscar/virar cor
             playSound('bumper');
             addScore(15);
         }
@@ -596,6 +596,7 @@ function drawBumpers() {
         ctx.shadowColor = b.color;
         ctx.shadowBlur = b.flash > 0 ? 25 : 15;
 
+        // Se estiver "piscando" devido ao toque, inverte temporariamente a cor principal para branco/amarelo forte
         let renderColor = b.color;
         if (b.flash > 0) {
             renderColor = "#ffffff";
