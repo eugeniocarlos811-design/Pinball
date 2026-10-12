@@ -155,7 +155,6 @@ function playSound(type) {
     const now = audioCtx.currentTime;
 
     if (type === 'launch') {
-        // Som de lançamento (subida rápida de frequência)
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(150, now);
         osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
@@ -164,25 +163,14 @@ function playSound(type) {
         osc.start(now);
         osc.stop(now + 0.3);
     } else if (type === 'bumper') {
-        // Som agudo e vibrante ao bater em bumpers
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(990, now + 0.2);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
         osc.start(now);
-        osc.stop(now + 0.15);
-    } else if (type === 'peg') {
-        // Som curto para pinos menores
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-        osc.start(now);
-        osc.stop(now + 0.08);
+        osc.stop(now + 0.2);
     } else if (type === 'flipper') {
-        // Som grave ao bater na palheta
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(120, now);
         osc.frequency.linearRampToValueAtTime(220, now + 0.1);
@@ -191,7 +179,6 @@ function playSound(type) {
         osc.start(now);
         osc.stop(now + 0.1);
     } else if (type === 'gameover') {
-        // Som descendente de fim de jogo
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(300, now);
         osc.frequency.linearRampToValueAtTime(80, now + 0.6);
@@ -212,7 +199,6 @@ const livesElement = document.getElementById("lives");
 const W = canvas.width;
 const H = canvas.height;
 
-// Corredor de lançamento no lado direito.
 const chute = {
     left: 326,
     right: 365,
@@ -220,10 +206,9 @@ const chute = {
     bottom: 525
 };
 
-// Triângulos defletores nas laterais inferiores
 const sideTriangles = [
-    { x1: 12, y1: 510, x2: 70, y2: 565, x3: 12, y3: 565 },   // Esquerdo
-    { x1: 315, y1: 510, x2: 257, y2: 565, x3: 315, y3: 565 }  // Direito
+    { x1: 12, y1: 510, x2: 70, y2: 565, x3: 12, y3: 565 },
+    { x1: 315, y1: 510, x2: 257, y2: 565, x3: 315, y3: 565 }
 ];
 
 const ball = {
@@ -245,28 +230,19 @@ let launcherHeld = false;
 let launcherPower = 0;
 let leftHeld = false;
 let rightHeld = false;
-let animationId = null;
 
 bestElement.textContent = best;
 
+// Bumpers (círculos) com tempo de piscar adicionado
 const bumpers = [
-    { x: 100, y: 145, r: 22, color: "#ff3e9d" },
-    { x: 205, y: 125, r: 22, color: "#21d4fd" },
-    { x: 145, y: 225, r: 20, color: "#ffe45c" },
-    { x: 250, y: 235, r: 20, color: "#9b5cff" },
-    { x: 75, y: 305, r: 18, color: "#48ff9b" },
-    { x: 215, y: 330, r: 20, color: "#ff8c42" }
+    { x: 100, y: 145, r: 22, color: "#ff3e9d", flash: 0 },
+    { x: 205, y: 125, r: 22, color: "#21d4fd", flash: 0 },
+    { x: 145, y: 225, r: 20, color: "#ffe45c", flash: 0 },
+    { x: 250, y: 235, r: 20, color: "#9b5cff", flash: 0 },
+    { x: 75, y: 305, r: 18, color: "#48ff9b", flash: 0 },
+    { x: 215, y: 330, r: 20, color: "#ff8c42", flash: 0 }
 ];
 
-const pegs = [
-    [45, 90], [155, 75], [270, 80],
-    [55, 200], [305, 175],
-    [95, 265], [185, 285], [295, 285],
-    [45, 365], [125, 360], [275, 390],
-    [85, 420], [180, 405], [285, 440]
-];
-
-// Palhetas afastadas deixando um espaço central para a bola passar
 const flippers = {
     left: {
         pivotX: 85,
@@ -412,24 +388,20 @@ function collideWithFlipper(f) {
 }
 
 function collideWithSideTriangles() {
-    // Esquerdo
     const pLeft = closestPointOnSegment(ball.x, ball.y, 12, 510, 70, 565);
     const distLeft = Math.hypot(ball.x - pLeft.x, ball.y - pLeft.y);
     if (distLeft < ball.radius + 2 && ball.y > 505 && ball.x < 75) {
         ball.vx = Math.abs(ball.vx) + 3;
         ball.vy -= 3;
         ball.x = pLeft.x + (ball.radius + 2);
-        playSound('peg');
     }
 
-    // Direito
     const pRight = closestPointOnSegment(ball.x, ball.y, 315, 510, 257, 565);
     const distRight = Math.hypot(ball.x - pRight.x, ball.y - pRight.y);
     if (distRight < ball.radius + 2 && ball.y > 505 && ball.x > 252) {
         ball.vx = -(Math.abs(ball.vx) + 3);
         ball.vy -= 3;
         ball.x = pRight.x - (ball.radius + 2);
-        playSound('peg');
     }
 }
 
@@ -456,32 +428,9 @@ function collideWithBumpers() {
                 ball.vy += ny * 5;
             }
 
+            b.flash = 10; // Ativa o efeito visual de piscar/virar cor
             playSound('bumper');
-            addScore(10);
-        }
-    }
-}
-
-function collideWithPegs() {
-    for (const p of pegs) {
-        const dx = ball.x - p[0];
-        const dy = ball.y - p[1];
-        const dist = Math.hypot(dx, dy);
-        const minDist = ball.radius + 4;
-
-        if (dist < minDist && dist > 0) {
-            const nx = dx / dist;
-            const ny = dy / dist;
-
-            ball.x = p[0] + nx * minDist;
-            ball.y = p[1] + ny * minDist;
-
-            const dot = ball.vx * nx + ball.vy * ny;
-            ball.vx -= 2 * dot * nx;
-            ball.vy -= 2 * dot * ny;
-
-            playSound('peg');
-            addScore(1);
+            addScore(15);
         }
     }
 }
@@ -559,7 +508,6 @@ function update() {
     }
 
     collideWithBumpers();
-    collideWithPegs();
     collideWithSideTriangles();
     collideWithFlipper(flippers.left);
     collideWithFlipper(flippers.right);
@@ -645,9 +593,15 @@ function drawBackground() {
 function drawBumpers() {
     for (const b of bumpers) {
         ctx.save();
-
         ctx.shadowColor = b.color;
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = b.flash > 0 ? 25 : 15;
+
+        // Se estiver "piscando" devido ao toque, inverte temporariamente a cor principal para branco/amarelo forte
+        let renderColor = b.color;
+        if (b.flash > 0) {
+            renderColor = "#ffffff";
+            b.flash--;
+        }
 
         const g = ctx.createRadialGradient(
             b.x - 5, b.y - 6, 2,
@@ -655,7 +609,7 @@ function drawBumpers() {
         );
 
         g.addColorStop(0, "#ffffff");
-        g.addColorStop(0.25, b.color);
+        g.addColorStop(0.25, renderColor);
         g.addColorStop(1, "#20254d");
 
         ctx.fillStyle = g;
@@ -663,25 +617,12 @@ function drawBumpers() {
         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = b.color;
+        ctx.strokeStyle = renderColor;
         ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.restore();
     }
-}
-
-function drawPegs() {
-    for (const p of pegs) {
-        ctx.beginPath();
-        ctx.fillStyle = "#eaf5ff";
-        ctx.shadowColor = "#7dbfff";
-        ctx.shadowBlur = 7;
-        ctx.arc(p[0], p[1], 4, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    ctx.shadowBlur = 0;
 }
 
 function drawFlipper(f, color) {
@@ -779,7 +720,6 @@ function drawGameOver() {
 
 function draw() {
     drawBackground();
-    drawPegs();
     drawBumpers();
 
     drawFlipper(flippers.left, "#34d9ff");
@@ -802,7 +742,6 @@ function loop() {
     animationId = requestAnimationFrame(loop);
 }
 
-// Controles dos flippers.
 function bindHold(buttonId, onDown, onUp) {
     const button = document.getElementById(buttonId);
 
